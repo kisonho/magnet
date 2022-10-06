@@ -1,2 +1,74 @@
-# magnet
-Modal AGnostic Network (MAGNET)
+# Model AGnostic Network (MAGNET)
+#magnet
+
+Torchmanager implementation for MAGNET
+
+## Pre-request
+* Python >= 3.9
+* torchmanager >= 1.0.4
+* Monai >= 0.9.0
+
+## Get Started
+1. Convert multiple datasets to a `magnet.data.TargetDataset` and use `magnet.data.TargetedDataLoader` to load the data
+```
+import ...
+import magnet
+
+# load data
+train_dataset_1, val_dataset_1 = ...
+train_dataset_2, val_dataset_2 = ...
+...
+target_dict = {0: "m1", 1: "m2", ...}
+training_dataset = magnet.data.TargetedDataset(train_dataset_1, train_dataset_2, target_dict=target_dict)
+training_dataset = magnet.data.TargetedDataLoader(training_dataset, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
+validation_dataset = {
+    "m1": data.DataLoader(val_dataset_1, batch_size=batch_size, shuffle=False),
+    "m2": data.DataLoader(val_dataset_2, batch_size=batch_size, shuffle=False),
+	...
+}
+```
+
+2. Simpy load the MAGNET with `magnet.load` function
+```
+num_modalities: int = ...
+num_classes: int = ...
+img_size: Union[int, Sequence[int]] = ...
+magnet: magnet.MAGNET = magnet.load(num_modalities, num_classes, img_size, target_dict=target_dict)
+```
+
+3. Or use the deeper `magnet.nn` framework to share layers in a `torch.nn.Module` by given names manually
+```
+model1: torch.nn.Module = ...
+model2: torch.nn.Module = ...
+shared_modules = {
+	"layer1": model_to_share.layer1,
+	"layer2": model_to_share.layer2,
+	...
+}
+model: magnet.MAGNET = magnet.nn.share_modules([model1.some_layers, model2.some_layers], shared_modules, target_dict=target_dict)
+```
+
+4. Compile manager and train/test
+```
+optimizer = ...
+loss_fn = ...
+metric_fns = ...
+
+epochs = ...
+callbacks = ...
+
+manager = magnet.TargetingManager(model, optimizer, loss_fn=loss_fn, metric_fns=metric_fns)
+manager.fit(training_dataset, epochs, val_dataset=validation_dataset, callbacks=callbacks)
+summary.test(validation_dataset)
+print(summary)
+```
+
+## Monai Support
+* Using `magnet.MonaiTargetingManager` instead of `TargetingManager` 
+* Post processing support with `post_labels` and `post_predicts`
+```
+post_labels = [...]
+post_predicts = [...]
+
+manager = magnet.MonaiTargetingManager(model, post_labels=post_labels, post_predicts=post_predicts, optimizer=optimizer, loss_fn=loss_fn, metric_fns=metric_fns)
+```

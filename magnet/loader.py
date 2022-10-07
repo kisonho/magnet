@@ -1,7 +1,7 @@
 from typing import Sequence, Union
 
 from .nn import MAGNET, share_modules
-from .unetr import UNETRWithDictOutput as UNETR
+from .networks.unetr import UNETRWithDictOutput as UNETR
 
 def load(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int], target_dict: dict[int, str]) -> MAGNET[UNETR]:
     '''
@@ -12,7 +12,7 @@ def load(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int]
         - num_classes: An `int` of the number of output classes
         - img_size: Either a `Sequence` of image size in `int` or an `int` of single image size
         - target_dict: A `dict` of target index as key in `int` and name of target as value in `str`
-    - Returns: A `MAGNET` with `.unetr.UNETRWithDictOutput` as its target modules
+    - Returns: A `MAGNET` with `.networks.unetr.UNETRWithDictOutput` as its target modules
     '''
     # initialize
     if not in_channels > 0: raise ValueError(f"The input channels must be a positive number, got {in_channels}.")

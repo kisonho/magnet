@@ -6,7 +6,7 @@ class MAGNET(torch.nn.Module, Generic[Module]):
     Modules that shared same architecture
 
     * extends: `torch.nn.Module`
-    * implements: `Targeting`, `ParametersSharing`
+    * implements: `..managers.protocols.Targeting`
     
     - Properties:
         - num_targets: An `int` of the total number of modalities in MAGNET

@@ -12,6 +12,7 @@ class MultiDataset(Dataset, abc.ABC):
     An abstract dataset class with multiple datasets combined
 
     * Abstract class
+    * extends: `torch.utils.data.Dataset`
     
     - Properties:
         - datasets: A `list` of multiple datasets in `Dataset`

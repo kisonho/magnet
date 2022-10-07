@@ -9,13 +9,6 @@ class SubResulting(Protocol):
     def sub_results(self) -> torch.Tensor:
         return NotImplemented
 
-class ParametersSharing(Protocol):
-    '''Parameters sharing protocol'''
-    @property
-    @abc.abstractmethod
-    def shared_parameters(self) -> list[torch.nn.parameter.Parameter]:
-        return NotImplemented
-
 @runtime_checkable
 class Targeting(Protocol):
     '''Targeting protocol'''

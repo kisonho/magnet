@@ -1,5 +1,5 @@
 """
-Main training script to train a multi modality UNETR with fuse inputs on Eric's dataset
+Main training script to train a UNETR on iSEG dataset
 """
 import logging, magnet, os, torch
 from monai.data.dataloader import DataLoader
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     last_ckpt_dir = os.path.join(config.experiment_dir, "last.model")
 
     # initialize transform options
-    trans = data.TransformOptions(
+    td = data.TransformOptions(
         load_imaged=False,
         center_spatial_cropd=(128, 128, 128),
         convert_label=True,
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     )
 
     # load dataset
-    training_dataset, validation_dataset, _, in_channels, num_classes = data.load_iseg2017(config.data, config.img_size, trans, split=[7 - config.training_split, config.training_split, 3])
+    training_dataset, validation_dataset, _, in_channels, num_classes = data.load_iseg2017(config.data, config.img_size, td, split=[7 - config.training_split, config.training_split, 3])
     training_dataset = DataLoader(training_dataset, batch_size=config.batch_size, collate_fn=pad_list_data_collate, drop_last=False, shuffle=True)
     validation_dataset = DataLoader(validation_dataset, batch_size=1, collate_fn=pad_list_data_collate)
 

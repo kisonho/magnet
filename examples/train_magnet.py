@@ -1,5 +1,5 @@
 """
-Main training script to train a multi modality UNETR on shared structure on Challenge dataset
+Main training script to train a MAGNET on Cardiac dataset
 """
 import logging, magnet, os, torch
 from monai.losses.dice import DiceCELoss

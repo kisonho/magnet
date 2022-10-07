@@ -1,5 +1,5 @@
 """
-Main training script to train a multi modality UNETR with fuse inputs on Eric's dataset
+Main training script to train a MAGNET on iSEG dataset
 """
 import logging, magnet, os, torch
 from monai.data.dataloader import DataLoader
@@ -26,19 +26,6 @@ if __name__ == "__main__":
     last_ckpt_dir = os.path.join(config.experiment_dir, "last.model")
 
     # initialize transform options
-    # transform options
-    td = data.TransformOptions(
-        load_imaged=False,
-        center_spatial_cropd=(128, 128, 128),
-        convert_label=True,
-        set_modality=None,
-        orientationd=True,
-        rand_crop_by_pos_neg_labeld=4,
-        rand_flipd=True,
-        rand_rotate_90d=True,
-        rand_shift_intensityd=True,
-        to_tensord=True
-        )
     td_t1 = data.TransformOptions(
         load_imaged=False,
         center_spatial_cropd=(128, 128, 128),

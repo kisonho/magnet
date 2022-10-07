@@ -1,5 +1,5 @@
 """
-Main training script to train a multi modality UNETR with fuse inputs on Eric's dataset
+Main training script to train a UNETR
 """
 import logging, os, torch
 from magnet.networks import UNETRWithDictOutput as UNETR

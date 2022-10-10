@@ -1,5 +1,8 @@
 """
 Main training script to train a UNETR on iSEG dataset
+
+Extra requirements:
+itk, imageio
 """
 import logging, magnet, os, torch
 from monai.data.dataloader import DataLoader

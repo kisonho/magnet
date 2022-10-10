@@ -5,7 +5,7 @@ Torchmanager implementation for MAGNET
 
 ## Pre-request
 * Python >= 3.9
-* torchmanager >= 1.0.4
+* [torchmanager](https://github.com/kisonho/torchmanager) >= 1.0.4
 * Monai >= 0.9.0
 
 ## Get Started

@@ -1,5 +1,8 @@
 """
 Main testing script to test a UNETR on iSEG dataset
+
+Extra requirements:
+itk, imageio
 """
 import torch
 from monai.data.dataloader import DataLoader

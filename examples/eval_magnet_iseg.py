@@ -1,5 +1,8 @@
 """
 Main testing script to test a MAGNET on iSEG dataset
+
+Extra requirements:
+itk, imageio
 """
 import torch
 from magnet import MAGNET, Manager

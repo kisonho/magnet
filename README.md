@@ -1,7 +1,5 @@
-# Model AGnostic Network (MAGNET)
+# MAGNET: The First Attempt Towards Modality-Agnostic Networks for Medical Image Segmentation
 #magnet
-
-Torchmanager implementation for MAGNET
 
 ## Pre-request
 * Python >= 3.9
@@ -28,7 +26,7 @@ validation_dataset = {
 }
 ```
 
-2. Simpy load the MAGNET with `magnet.load` function
+2. Simpy load the MAGNET (UNETR backbone) with `magnet.load` function
 ```
 num_modalities: int = ...
 num_classes: int = ...
@@ -57,18 +55,18 @@ metric_fns = ...
 epochs = ...
 callbacks = ...
 
-manager = magnet.TargetingManager(model, optimizer, loss_fn=loss_fn, metric_fns=metric_fns)
+manager = magnet.Manager(model, optimizer, loss_fn=loss_fn, metric_fns=metric_fns)
 manager.fit(training_dataset, epochs, val_dataset=validation_dataset, callbacks=callbacks)
 summary.test(validation_dataset)
 print(summary)
 ```
 
 ## Monai Support
-* Using `magnet.MonaiTargetingManager` instead of `TargetingManager` 
+* Using `magnet.MonaigManager` instead of `Manager` 
 * Post processing support with `post_labels` and `post_predicts`
 ```
 post_labels = [...]
 post_predicts = [...]
 
-manager = magnet.MonaiTargetingManager(model, post_labels=post_labels, post_predicts=post_predicts, optimizer=optimizer, loss_fn=loss_fn, metric_fns=metric_fns)
+manager = magnet.MonaigManager(model, post_labels=post_labels, post_predicts=post_predicts, optimizer=optimizer, loss_fn=loss_fn, metric_fns=metric_fns)
 ```

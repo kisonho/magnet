@@ -79,7 +79,7 @@ if __name__ == "__main__":
     }
 
     # load model
-    model = magnet.load(2, num_classes=num_classes, img_size=config.img_size, target_dict={0: "MRI", 1: "CT"})
+    model = magnet.build(2, num_classes=num_classes, img_size=config.img_size, target_dict={0: "MRI", 1: "CT"})
 
     # initialize optimizer, loss, metrics, and post processing
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=1e-5)

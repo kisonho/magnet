@@ -3,7 +3,7 @@ from typing import Sequence, Union
 from .nn import MAGNET, share_modules
 from .networks.unetr import UNETRWithDictOutput as UNETR
 
-def load(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int], target_dict: dict[int, str]) -> MAGNET[UNETR]:
+def build(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int], target_dict: dict[int, str]) -> MAGNET[UNETR]:
     '''
     Function to load a MAGNET
 

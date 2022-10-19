@@ -29,6 +29,7 @@ setup(name='magnet',
         'torchmanager_monai.metrics': 'torchmanager_monai/metrics',
     },
     install_requires=[
+        'monai>=0.9.0',
         'torchmanager>=1.0.4',
         'torch>=1.8.2',
         'tqdm',

@@ -11,7 +11,7 @@ class Manager(_Manager[Module], _TargetingManager[Module], Generic[Module]):
     """
     A `TargetingManager` with monai compatibility wrap
     
-    * extends: `TargetingManager`
+    * extends: `torchmanager_monai.Manager`, `.targeting.Manager`
     """
     _post_labels: list[Callable[[torch.Tensor], torch.Tensor]]
     _post_predicts: list[Callable[[torch.Tensor], torch.Tensor]]

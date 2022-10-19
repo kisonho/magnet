@@ -65,7 +65,7 @@ if __name__ == "__main__":
     }
 
     # load model
-    model = magnet.load(2, num_classes, config.img_size, target_dict={0: "T1", 1: "T2"})
+    model = magnet.build(2, num_classes, config.img_size, target_dict={0: "T1", 1: "T2"})
 
     '''
     # load model
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5)
 
     # compile manager
-    manager = magnet.Manager(model, post_labels=post_labels, post_predicts=post_predicts, optimizer=optimizer, loss_fn=loss_fn, metrics=metric_fns, roi_size=config.img_size, target_freq=config.target_frequency) # type: ignore
+    manager = magnet.Manager(model, post_labels=post_labels, post_predicts=post_predicts, optimizer=optimizer, loss_fn=loss_fn, metrics=metric_fns, roi_size=config.img_size) # type: ignore
 
     # initialize callbacks
     tensorboard_callback = callbacks.TensorBoard(data_dir)

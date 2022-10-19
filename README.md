@@ -26,12 +26,12 @@ validation_dataset = {
 }
 ```
 
-2. Simpy load the MAGNET (UNETR backbone) with `magnet.load` function
+2. Simpy build the MAGNET (UNETR backbone) with `magnet.build` function
 ```
 num_modalities: int = ...
 num_classes: int = ...
 img_size: Union[int, Sequence[int]] = ...
-magnet: magnet.MAGNET = magnet.load(num_modalities, num_classes, img_size, target_dict=target_dict)
+model = magnet.build(num_modalities, num_classes, img_size, target_dict=target_dict)
 ```
 
 3. Or use the deeper `magnet.nn` framework to share layers in a `torch.nn.Module` by given names manually
@@ -43,7 +43,7 @@ shared_modules = {
 	"layer2": model_to_share.layer2,
 	...
 }
-model: magnet.MAGNET = magnet.nn.share_modules([model1.some_layers, model2.some_layers], shared_modules, target_dict=target_dict)
+model = magnet.nn.share_modules([model1.some_layers, model2.some_layers], shared_modules, target_dict=target_dict)
 ```
 
 4. Compile manager and train/test

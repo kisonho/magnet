@@ -45,9 +45,11 @@ class MAGNET(torch.nn.Module, Generic[Module]):
             preds_dict: dict[str, list[torch.Tensor]] = {}
 
             # loop for each modality
-            for t in self.target_dict:
+            for i, t in enumerate(self.target_dict):
                 # forward each modality
-                x = x_in[:, t:t+1, ...]
+                if x_in.shape[1] > len(self.target_dict): x = x_in[:, t:t+1, ...]
+                else: x = x_in[:, i:i+1, ...]
+                if x.shape[1] < 1: raise ValueError(f"No modality '{self.target_dict[t]}' (id={i}) found in the input.")
                 y_pred: Union[torch.Tensor, dict[str, torch.Tensor]] = self.target_modules[t](x, *args, **kwargs)
                 
                 # check prediction type
@@ -65,7 +67,7 @@ class MAGNET(torch.nn.Module, Generic[Module]):
 
             # calculate mean or max
             assert len(preds) > 0 or len(preds_dict) > 0, "Fetch output failed, no modality was passed."
-            y = torch.concat(preds, dim=1).mean(dim=1) if len(preds) > 0 else {key: torch.cat(values, dim=1).mean(dim=1) for key, values in preds_dict.items()}
+            y = torch.concat(preds, dim=1).sum(dim=1) if len(preds) > 0 else {key: torch.cat(values, dim=1).sum(dim=1) for key, values in preds_dict.items()}
             return y
         else: return self.target_modules[self.target](x_in, *args, **kwargs)
 

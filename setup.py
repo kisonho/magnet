@@ -5,8 +5,8 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(name='magnet',
-    version='0.9.1rc',
-    description='PyTorch training manager (v0.9.1 Release Candidate 2)',
+    version='0.9.2rc',
+    description='PyTorch training manager (v0.9.2 Release Candidate 3)',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Kison Ho',
@@ -29,7 +29,6 @@ setup(name='magnet',
         'torchmanager_monai.metrics': 'torchmanager_monai/metrics',
     },
     install_requires=[
-        'monai>=0.9.0',
         'torchmanager>=1.0.4',
         'torch>=1.8.2',
         'tqdm',

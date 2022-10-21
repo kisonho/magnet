@@ -4,8 +4,11 @@ from typing import Any, Sized
 import abc
 from torch.utils.data import Dataset
 
-try: from monai.data.dataloader import DataLoader
-except: from torch.utils.data import DataLoader
+try:
+    from monai.data.dataloader import DataLoader
+except:
+    from torch.utils.data import DataLoader
+
 
 class MultiDataset(Dataset, abc.ABC):
     """
@@ -13,10 +16,11 @@ class MultiDataset(Dataset, abc.ABC):
 
     * Abstract class
     * extends: `torch.utils.data.Dataset`
-    
+
     - Properties:
         - datasets: A `list` of multiple datasets in `Dataset`
     """
+
     __datasets: list[Dataset[Any]]
 
     @property
@@ -43,12 +47,14 @@ class MultiDataset(Dataset, abc.ABC):
     def __len__(self) -> int:
         return NotImplemented
 
+
 class EquivalentDataset(MultiDataset):
     """
     TODO A dataset with equivalent amount of data in multiple datasets
 
     * extends: `MultiDataset`
     """
+
     def __init__(self, *datasets: Dataset[Any]) -> None:
         """
         - Parameters:
@@ -57,16 +63,20 @@ class EquivalentDataset(MultiDataset):
         super().__init__(*datasets)
 
         # assert length
-        if not isinstance(datasets[0], Sized): raise TypeError("There are datasets that do not confirm to `Sized` protocol given.")
+        if not isinstance(datasets[0], Sized):
+            raise TypeError("There are datasets that do not confirm to `Sized` protocol given.")
         length = len(datasets[0])
         for d in self.datasets:
-            if not isinstance(d, Sized): raise TypeError("There are datasets that do not confirm to `Sized` protocol given.")
+            if not isinstance(d, Sized):
+                raise TypeError("There are datasets that do not confirm to `Sized` protocol given.")
             assert length == len(d), "The given datasets must contain equivalent size."
 
     def __add__(self, other: Dataset[Any]) -> EquivalentDataset:
-        if not isinstance(other, Sized): raise TypeError("The dataset does not confirm to `Sized` protocol given.")
+        if not isinstance(other, Sized):
+            raise TypeError("The dataset does not confirm to `Sized` protocol given.")
         if len(self.datasets) > 0:
-            if not isinstance(self.datasets[0], Sized): raise TypeError("One of the dataset in current datasets does not confirm to `Sized` protocol.")
+            if not isinstance(self.datasets[0], Sized):
+                raise TypeError("One of the dataset in current datasets does not confirm to `Sized` protocol.")
             assert len(self.datasets[0]) == len(other), "The given datasets must contain equivalent size with other datasets."
         super().__add__(other)
         return self
@@ -76,8 +86,10 @@ class EquivalentDataset(MultiDataset):
 
     def __len__(self) -> int:
         d = self.datasets[0]
-        if not isinstance(d, Sized): raise TypeError("There are datasets that do not confirm to `Sized` protocol given.")
+        if not isinstance(d, Sized):
+            raise TypeError("There are datasets that do not confirm to `Sized` protocol given.")
         return len(d)
+
 
 class TargetedDataset(MultiDataset):
     """
@@ -90,6 +102,7 @@ class TargetedDataset(MultiDataset):
         - datasets: A `list` of multiple datasets
         - target: An `int` of target dataset index in `datasets` list
     """
+
     __target: int
     __target_dict: dict[int, str]
 
@@ -99,7 +112,8 @@ class TargetedDataset(MultiDataset):
 
     @target.setter
     def target(self, t: int) -> None:
-        if (abs(t) >= len(self.datasets)) and t != 0: raise IndexError(f"Target {t} out of datasets range ({len(self.datasets)}).")
+        if (abs(t) >= len(self.datasets)) and t != 0:
+            raise IndexError(f"Target {t} out of datasets range ({len(self.datasets)}).")
         self.__target = t
 
     @property
@@ -123,10 +137,12 @@ class TargetedDataset(MultiDataset):
 
     def __len__(self) -> int:
         d = self.datasets[self.target]
-        if not isinstance(d, Sized): raise TypeError(f"Dataset with target index {self.target} does not perform to Sized protocol")
+        if not isinstance(d, Sized):
+            raise TypeError(f"Dataset with target index {self.target} does not perform to Sized protocol")
         return len(d)
 
-class TargetedDataLoader(DataLoader): # type: ignore
+
+class TargetedDataLoader(DataLoader):  # type: ignore
     """
     The dataloader for `MixedDataset`
 
@@ -137,6 +153,7 @@ class TargetedDataLoader(DataLoader): # type: ignore
         - target: An `int` of target dataset index in the mixed dataset
         - target_dict: A `dict` of target index (keys in `int`) and name mapping (values in `str`)
     """
+
     dataset: TargetedDataset
 
     @property

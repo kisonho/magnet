@@ -1,20 +1,21 @@
 import torch
 from torchmanager_core.typing import Any, Generic, Module, Union
 
+
 class MAGNET(torch.nn.Module, Generic[Module]):
     """
     Modules that shared same architecture
 
     * extends: `torch.nn.Module`
     * implements: `..managers.protocols.Targeting`
-    
+
     - Properties:
         - num_targets: An `int` of the total number of modalities in MAGNET
-        - shared_parameters: A `list` of shared parameters
         - target: An `int` of the target index in the module list
         - target_dict: A `dict` of available target modality as key in `int` and name of target as value in `str`
         - target_modules: A `torch.nn.ModuleList` of all modules
     """
+
     target: int
     target_dict: dict[int, str]
     target_modules: torch.nn.ModuleList
@@ -47,11 +48,14 @@ class MAGNET(torch.nn.Module, Generic[Module]):
             # loop for each modality
             for i, t in enumerate(self.target_dict):
                 # forward each modality
-                if x_in.shape[1] > len(self.target_dict): x = x_in[:, t:t+1, ...]
-                else: x = x_in[:, i:i+1, ...]
-                if x.shape[1] < 1: raise ValueError(f"No modality '{self.target_dict[t]}' (id={i}) found in the input.")
+                if x_in.shape[1] > len(self.target_dict):
+                    x = x_in[:, t : t + 1, ...]
+                else:
+                    x = x_in[:, i : i + 1, ...]
+                if x.shape[1] < 1:
+                    raise ValueError(f"No modality '{self.target_dict[t]}' (id={i}) found in the input.")
                 y_pred: Union[torch.Tensor, dict[str, torch.Tensor]] = self.target_modules[t](x, *args, **kwargs)
-                
+
                 # check prediction type
                 if isinstance(y_pred, dict):
                     # check output types
@@ -59,8 +63,10 @@ class MAGNET(torch.nn.Module, Generic[Module]):
 
                     # loop for items in dictionary
                     for key, pred in y_pred.items():
-                        if key not in preds_dict: preds_dict[key] = [pred.unsqueeze(1)]
-                        else: preds_dict[key].append(pred)
+                        if key not in preds_dict:
+                            preds_dict[key] = [pred.unsqueeze(1)]
+                        else:
+                            preds_dict[key].append(pred)
                 else:
                     assert len(preds_dict) == 0, "Outputs for modalities must be in same format."
                     preds.append(y_pred.unsqueeze(1))
@@ -69,12 +75,14 @@ class MAGNET(torch.nn.Module, Generic[Module]):
             assert len(preds) > 0 or len(preds_dict) > 0, "Fetch output failed, no modality was passed."
             y = torch.concat(preds, dim=1).sum(dim=1) if len(preds) > 0 else {key: torch.cat(values, dim=1).sum(dim=1) for key, values in preds_dict.items()}
             return y
-        else: return self.target_modules[self.target](x_in, *args, **kwargs)
+        else:
+            return self.target_modules[self.target](x_in, *args, **kwargs)
+
 
 def share_modules(models: list[Module], shared_modules: dict[str, torch.nn.Module], target_dict: dict[int, str] = {}) -> MAGNET[Module]:
     """
     Share modules with shared modules in attribution name
-    
+
     - Parameters:
         - models: A target `list` of `Module`
         - shared_modules: A `dict` of shared `torch.nn.Module` with name in `str`
@@ -85,6 +93,7 @@ def share_modules(models: list[Module], shared_modules: dict[str, torch.nn.Modul
     for k, m in shared_modules.items():
         # loop for target modules
         for model in models:
-            if not hasattr(model, k): raise NameError(f"One or more given models do not have layer named {k}.")
+            if not hasattr(model, k):
+                raise NameError(f"One or more given models do not have layer named {k}.")
             setattr(model, k, m)
     return MAGNET(*models, target_dict=target_dict)

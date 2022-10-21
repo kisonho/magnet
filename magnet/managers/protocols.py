@@ -1,17 +1,12 @@
 from torchmanager_core import abc, torch
 from torchmanager_core.typing import Protocol, runtime_checkable
+from torchmanager_monai.protocols import SubResulting
 
-@runtime_checkable
-class SubResulting(Protocol):
-    '''Protocol that contains sub-results'''
-    @property
-    @abc.abstractmethod
-    def sub_results(self) -> torch.Tensor:
-        return NotImplemented
 
 @runtime_checkable
 class Targeting(Protocol):
-    '''Targeting protocol'''
+    """Targeting protocol"""
+
     @property
     @abc.abstractmethod
     def num_targets(self) -> int:

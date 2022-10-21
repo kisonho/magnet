@@ -6,8 +6,10 @@ from torchmanager_core.typing import Any, Callable, Generic, Module, Sequence, S
 
 from .protocols import SubResulting
 
+
 class Manager(tm.Manager[Module], Generic[Module]):
     """The training manager with monai compability"""
+
     _post_labels: Callable[[torch.Tensor], torch.Tensor]
     _post_predicts: Callable[[torch.Tensor], torch.Tensor]
     _roi_size: Sequence[int]
@@ -31,35 +33,41 @@ class Manager(tm.Manager[Module], Generic[Module]):
     def predict(self, dataset: SizedIterable, device: Optional[Union[torch.device, list[torch.device]]] = None, use_multi_gpus: bool = False, show_verbose: bool = False) -> list[torch.Tensor]:
         # find available device
         cpu, device, target_devices = devices.search(None if use_multi_gpus else device)
-        if device == cpu and len(target_devices) < 2: use_multi_gpus = False
+        if device == cpu and len(target_devices) < 2:
+            use_multi_gpus = False
         devices.set_default(target_devices[0])
 
         # move model
         if use_multi_gpus and not isinstance(self.model, torch.nn.parallel.DataParallel):
             raw_model = self.model
             self.model, use_multi_gpus = devices.data_parallel(self.model, devices=target_devices)
-        else: raw_model = None
+        else:
+            raw_model = None
 
         # initialize predictions
         self.model.eval()
         predictions: list[torch.Tensor] = []
-        if len(dataset) == 0: return predictions
+        if len(dataset) == 0:
+            return predictions
         progress_bar = view.tqdm(total=len(dataset)) if show_verbose else None
         self.to(device)
 
         # loop the dataset
         for data in dataset:
             x, _ = self.unpack_data(data)
-            if use_multi_gpus is not True: x = x.to(device)
+            if use_multi_gpus is not True:
+                x = x.to(device)
             val_outputs = sliding_window_inference(x, self._roi_size, 1, self.model)
-            y: list[torch.Tensor] = decollate_batch(val_outputs) # type: ignore
+            y: list[torch.Tensor] = decollate_batch(val_outputs)  # type: ignore
             y = [self._post_predicts(val_pred_tensor).unsqueeze(0) for val_pred_tensor in y]
             y_post = torch.cat(y)
             predictions.append(y_post)
-            if progress_bar is not None: progress_bar.update()
+            if progress_bar is not None:
+                progress_bar.update()
 
         # reset model and loss
-        if raw_model is not None: self.model = raw_model.to(cpu)
+        if raw_model is not None:
+            self.model = raw_model.to(cpu)
         devices.empty_cache()
         return predictions
 
@@ -72,8 +80,9 @@ class Manager(tm.Manager[Module], Generic[Module]):
         for k, m in self.compiled_metrics.items():
             if isinstance(m, SubResulting):
                 subresults: list[float] = m.sub_results.reshape([-1]).detach().tolist()
-                k = k.replace('val_', '')
-                for i, r in enumerate(subresults): summary[f"{k}_{i}"] = r
+                k = k.replace("val_", "")
+                for i, r in enumerate(subresults):
+                    summary[f"{k}_{i}"] = r
 
         # reset loss fn
         return summary
@@ -84,13 +93,14 @@ class Manager(tm.Manager[Module], Generic[Module]):
 
         # forward pass
         val_outputs = sliding_window_inference(x_test, self._roi_size, 1, self.model)
-        val_labels_list: list[torch.Tensor] = decollate_batch(y_test) # type: ignore
+        val_labels_list: list[torch.Tensor] = decollate_batch(y_test)  # type: ignore
         y_test_dict = {"out": torch.cat([l.unsqueeze(0) for l in val_labels_list])}
-        y: list[torch.Tensor] = decollate_batch(val_outputs) # type: ignore
+        y: list[torch.Tensor] = decollate_batch(val_outputs)  # type: ignore
         y_dict = {"out": torch.cat([o.unsqueeze(0) for o in y])}
 
         # calculate loss
-        if self.loss_fn is not None: summary["loss"] = float(self.loss_fn(y_dict, y_test_dict))
+        if self.loss_fn is not None:
+            summary["loss"] = float(self.loss_fn(y_dict, y_test_dict))
 
         # post process for metrics evaluation
         y_test_post = [self._post_labels(val_label_tensor).unsqueeze(0) for val_label_tensor in val_labels_list]
@@ -100,7 +110,8 @@ class Manager(tm.Manager[Module], Generic[Module]):
 
         # forward metrics
         for name, fn in self.compiled_metrics.items():
-            if name.startswith("val_"): name = name.replace("val_", "")
+            if name.startswith("val_"):
+                name = name.replace("val_", "")
             try:
                 fn(y_dict, y_test_dict)
                 summary[name] = float(fn.result.detach())

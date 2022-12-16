@@ -45,7 +45,7 @@ class Manager(tm.Manager[Module], Generic[Module]):
         else:
             return {}
 
-    def __init__(self, model: Module, optimizer: Optional[torch.optim.Optimizer] = None, loss_fn: Optional[Union[tm.losses.Loss, dict[str, tm.losses.Loss], Callable[[Any, Any], torch.Tensor]]] = None, metrics: dict[str, Union[tm.metrics.Metric, Callable[[Any, Any], torch.Tensor]]] = {}, target_freq: Frequency = Frequency.EPOCH) -> None:
+    def __init__(self, model: Module, optimizer: Optional[torch.optim.Optimizer] = None, loss_fn: Optional[Union[tm.losses.Loss, dict[str, tm.losses.Loss]]] = None, metrics: dict[str, tm.metrics.Metric] = {}, target_freq: Frequency = Frequency.EPOCH) -> None:
         super().__init__(model, optimizer, loss_fn, metrics)
         self.__target = 0
         self.__freq = target_freq

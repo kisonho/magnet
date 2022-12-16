@@ -87,41 +87,41 @@ class Manager(tm.Manager[Module], Generic[Module]):
         # reset loss fn
         return summary
 
-    def test_step(self, x_test: Any, y_test: Any) -> dict[str, float]:
+    def test_step(self, x_test: torch.Tensor, y_test: torch.Tensor) -> dict[str, float]:
         # initialize
         summary: dict[str, float] = {}
 
         # forward pass
         val_outputs = sliding_window_inference(x_test, self._roi_size, 1, self.model)
         val_labels_list: list[torch.Tensor] = decollate_batch(y_test)  # type: ignore
-        y_test_dict = {"out": torch.cat([l.unsqueeze(0) for l in val_labels_list])}
-        y: list[torch.Tensor] = decollate_batch(val_outputs)  # type: ignore
-        y_dict = {"out": torch.cat([o.unsqueeze(0) for o in y])}
+        y_test = torch.cat([l.unsqueeze(0) for l in val_labels_list])
+        y_list: list[torch.Tensor] = decollate_batch(val_outputs)  # type: ignore
+        y = torch.cat([o.unsqueeze(0) for o in y_list])
 
         # calculate loss
         if self.loss_fn is not None:
-            summary["loss"] = float(self.loss_fn(y_dict, y_test_dict))
+            summary["loss"] = float(self.loss_fn(y, y_test))
 
         # post process for metrics evaluation
         y_test_post = [self._post_labels(val_label_tensor).unsqueeze(0) for val_label_tensor in val_labels_list]
         y_post = [self._post_predicts(val_pred_tensor).unsqueeze(0) for val_pred_tensor in y]
-        y_test_dict["out"] = torch.cat(y_test_post)
-        y_dict["out"] = torch.cat(y_post).to(y_test_dict["out"].device)
+        y_test = torch.cat(y_test_post)
+        y = torch.cat(y_post).to(y_test.device)
 
         # forward metrics
         for name, fn in self.compiled_metrics.items():
             if name.startswith("val_"):
                 name = name.replace("val_", "")
+            elif "loss" in name:
+                continue
             try:
-                fn(y_dict, y_test_dict)
+                fn(y, y_test)
                 summary[name] = float(fn.result.detach())
             except Exception as metric_error:
                 runtime_error = RuntimeError(f"Cannot fetch metric '{name}'.")
                 raise runtime_error from metric_error
         return summary
 
-    def unpack_data(self, data: dict[str, Any]) -> tuple[torch.Tensor, Union[dict[str, torch.Tensor], torch.Tensor]]:
+    def unpack_data(self, data: dict[str, Any]) -> tuple[torch.Tensor, torch.Tensor]:
         image, label = data["image"], data["label"]
-        data.update({"out": label})
-        y = {k: v for k, v in data.items() if torch.is_tensor(v)}
-        return image, y if self.model.training is True else data["label"]
+        return image, label

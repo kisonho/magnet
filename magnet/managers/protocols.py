@@ -1,5 +1,5 @@
-from torchmanager_core import abc, torch
-from torchmanager_core.typing import Protocol, runtime_checkable
+from torchmanager_core import abc
+from torchmanager_core.typing import Optional, Protocol, runtime_checkable
 from torchmanager_monai.protocols import SubResulting
 
 
@@ -14,12 +14,12 @@ class Targeting(Protocol):
 
     @property
     @abc.abstractmethod
-    def target(self) -> int:
+    def target(self) -> Optional[int]:
         return NotImplemented
 
     @target.setter
     @abc.abstractmethod
-    def target(self, t: int) -> None:
+    def target(self, t: Optional[int]) -> None:
         pass
 
     @property

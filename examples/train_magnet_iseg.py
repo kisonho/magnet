@@ -67,12 +67,6 @@ if __name__ == "__main__":
     # load model
     model = magnet.build(2, num_classes, config.img_size, target_dict={0: "T1", 1: "T2"})
 
-    '''
-    # load model
-    UNETR = networks.TargetedUNETRWithDictOutput
-    model = UNETR(2, num_classes, img_size=config.img_size, feature_size=16, hidden_size=768, mlp_dim=3072, num_heads=12, pos_embed="perceptron", norm_name="instance", res_block=True, dropout_rate=0.0, target_dict={0: "T1", 1: "T2"})
-    '''
-
     # initialize optimizer, loss, metrics, and post processing
     optimizer = torch.optim.SGD(model.parameters(), 0.001, momentum=0.6)
     loss_fn = losses.Loss(DiceCELoss(to_onehot_y=True, softmax=True), target="out")

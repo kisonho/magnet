@@ -38,20 +38,14 @@ class Manager(tm.Manager[Module]):
         return self.__freq
 
     @property
-    def target_dict(self) -> dict[int, str]:
+    def target_dict(self) -> dict[Optional[int], str]:
         model = self.model.module if isinstance(self.model, torch.nn.parallel.DataParallel) else self.model
         if isinstance(model, Targeting):
             return model.target_dict
         else:
-            return {0: "all"}
+            return {None: "all"}
 
-    def __init__(self, model: Module, optimizer: Optional[torch.optim.Optimizer] = None, loss_fn: Optional[Union[tm.losses.Loss, dict[str, tm.losses.Loss]]] = None, metrics: dict[str, tm.metrics.Metric] = {}, target_freq: Optional[Frequency] = Frequency.EPOCH) -> None:
-        """
-        Constructor
-
-        - Parameters:
-            - target_freq: The update training `Frequency`
-        """
+    def __init__(self, model: Module, optimizer: Optional[torch.optim.Optimizer] = None, loss_fn: Optional[Union[tm.losses.Loss, dict[str, tm.losses.Loss]]] = None, metrics: dict[str, tm.metrics.Metric] = {}, target_freq: Optional[Frequency] = None) -> None:
         super().__init__(model, optimizer, loss_fn, metrics)
         self.__target = 0
         self.__freq = target_freq
@@ -112,10 +106,17 @@ class Manager(tm.Manager[Module]):
             return super().test(dataset, show_verbose=show_verbose, **kwargs)
 
         # test datasets in one epoch
-        for t, (name, d) in enumerate(dataset.items()):
+        for m, d in dataset.items():
+            # fetch modality name
+            modality: Optional[int] = m
+            name = self.target_dict[modality]
+
+            # set target
             if show_verbose:
-                print(f"Target {t} (Dataset {name}):")
-            self.target = t
+                print(f"Target {modality} (Dataset {name}):")
+            self.target = modality
+
+            # test dataset
             try:
                 subsummary = super().test(d, show_verbose=show_verbose, **kwargs)
             except Exception as e:

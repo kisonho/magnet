@@ -24,5 +24,5 @@ class Targeting(Protocol):
 
     @property
     @abc.abstractmethod
-    def target_dict(self) -> dict[int, str]:
+    def target_dict(self) -> dict[Optional[int], str]:
         return NotImplemented

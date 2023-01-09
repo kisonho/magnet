@@ -3,7 +3,7 @@ from torchmanager_core import torch, _raise
 from torchmanager_core.typing import Any, Optional
 
 
-class TargetingLoss(MultiLosses):
+class MAGLoss(MultiLosses):
     modality: Optional[int]
 
     def __init__(self, losses: list[Loss], modality: Optional[int] = None, target: Optional[str] = None, weight: float = 1) -> None:

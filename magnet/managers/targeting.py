@@ -1,5 +1,6 @@
-import torch, torchmanager as tm
+import torchmanager as tm
 from torchmanager.train import LrScheduleFreq as Frequency
+from torchmanager_core import torch
 from torchmanager_core.typing import Any, Module, Optional, SizedIterable, Union
 
 from .protocols import Targeting
@@ -43,9 +44,15 @@ class Manager(tm.Manager[Module]):
         if isinstance(model, Targeting):
             return model.target_dict
         else:
-            return {None: "all"}
+            return {0: "all"}
 
-    def __init__(self, model: Module, optimizer: Optional[torch.optim.Optimizer] = None, loss_fn: Optional[Union[tm.losses.Loss, dict[str, tm.losses.Loss]]] = None, metrics: dict[str, tm.metrics.Metric] = {}, target_freq: Optional[Frequency] = None) -> None:
+    def __init__(self, model: Module, optimizer: Optional[torch.optim.Optimizer] = None, loss_fn: Optional[Union[tm.losses.Loss, dict[str, tm.losses.Loss]]] = None, metrics: dict[str, tm.metrics.Metric] = {}, target_freq: Optional[Frequency] = Frequency.EPOCH) -> None:
+        """
+        Constructor
+
+        - Parameters:
+            - target_freq: The update training `Frequency`
+        """
         super().__init__(model, optimizer, loss_fn, metrics)
         self.__target = 0
         self.__freq = target_freq
@@ -97,6 +104,7 @@ class Manager(tm.Manager[Module]):
         else:
             return super()._train(dataset, show_verbose=show_verbose, **kwargs)
 
+    @torch.no_grad()
     def test(self, dataset: SizedIterable, show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         # initialize
         summary: dict[str, float] = {}

@@ -1,5 +1,4 @@
-from __future__ import annotations
-from typing import Any, Optional, Sized
+from torchmanager_core.typing import Any, Self, Sized
 
 import abc
 from torch.utils.data import Dataset
@@ -35,7 +34,7 @@ class MultiDataset(Dataset, abc.ABC):
         super().__init__()
         self.__datasets = list(datasets)
 
-    def __add__(self, other: Dataset[Any]) -> MultiDataset:
+    def __add__(self, other: Dataset[Any]) -> Self:
         self.datasets.append(other)
         return self
 
@@ -71,7 +70,7 @@ class EquivalentDataset(MultiDataset):
                 raise TypeError("There are datasets that do not confirm to `Sized` protocol given.")
             assert length == len(d), "The given datasets must contain equivalent size."
 
-    def __add__(self, other: Dataset[Any]) -> EquivalentDataset:
+    def __add__(self, other: Dataset[Any]) -> Self:
         if not isinstance(other, Sized):
             raise TypeError("The dataset does not confirm to `Sized` protocol given.")
         if len(self.datasets) > 0:
@@ -104,7 +103,7 @@ class TargetedDataset(MultiDataset):
     """
 
     __target: int
-    __target_dict: dict[Optional[int], str]
+    __target_dict: dict[int, str]
 
     @property
     def target(self) -> int:
@@ -117,11 +116,11 @@ class TargetedDataset(MultiDataset):
         self.__target = t
 
     @property
-    def target_dict(self) -> dict[Optional[int], str]:
+    def target_dict(self) -> dict[int, str]:
         assert len(self.datasets) == len(self.__target_dict), "The length of datasets does not equal to the dictionary."
         return self.__target_dict
 
-    def __init__(self, *datasets: Dataset[Any], default_target: int = 0, target_dict: dict[Optional[int], str]) -> None:
+    def __init__(self, *datasets: Dataset[Any], default_target: int = 0, target_dict: dict[int, str]) -> None:
         """
         - Parameters:
             - *datasets: Multiple target datasets in `Dataset`
@@ -169,7 +168,7 @@ class TargetedDataLoader(DataLoader):  # type: ignore
         self.dataset.target = t
 
     @property
-    def target_dict(self) -> dict[Optional[int], str]:
+    def target_dict(self) -> dict[int, str]:
         return self.dataset.target_dict
 
     def __init__(self, dataset: TargetedDataset, *args: Any, **kwargs: Any):

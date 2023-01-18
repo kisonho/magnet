@@ -17,14 +17,14 @@ class MAGNET(torch.nn.Module, Generic[Module]):
     """
 
     target: Optional[int]
-    target_dict: dict[Optional[int], str]
+    target_dict: dict[int, str]
     target_modules: torch.nn.ModuleList
 
     @property
     def num_targets(self) -> int:
         return len(self.target_modules)
 
-    def __init__(self, *modules: Module, target_dict: dict[Optional[int], str] = {}) -> None:
+    def __init__(self, *modules: Module, target_dict: dict[int, str] = {}) -> None:
         """
         Constructor
 
@@ -47,21 +47,7 @@ class MAGNET(torch.nn.Module, Generic[Module]):
             # loop for each modality
             for i, t in enumerate(self.target_dict):
                 # forward each modality
-                if t is None:
-                    # initialize output
-                    y_preds: list[Any] = []
-
-                    # loop for each modality
-                    for target in range(x_in.shape[1]):
-                        x = x_in[:, target: target + 1, ...]
-                        y_pred: Union[torch.Tensor, dict[str, torch.Tensor]] = self.target_modules[target](x, *args, **kwargs)
-                        y_preds.append(y_pred)
-
-                    # fuse
-                    y_pred = self.fuse(y_preds)
-                    preds.append(y_pred)
-                    continue
-                elif x_in.shape[1] > len(self.target_dict):
+                if x_in.shape[1] > len(self.target_dict):
                     x = x_in[:, t : t + 1, ...]
                 else:
                     x = x_in[:, i : i + 1, ...]
@@ -104,14 +90,14 @@ class MAGNET(torch.nn.Module, Generic[Module]):
             return y
 
 
-def share_modules(models: list[Module], shared_modules: dict[str, torch.nn.Module], target_dict: dict[Optional[int], str] = {}) -> MAGNET[Module]:
+def share_modules(models: list[Module], shared_modules: dict[str, torch.nn.Module], target_dict: dict[int, str] = {}) -> MAGNET[Module]:
     """
     Share modules with shared modules in attribution name
 
     - Parameters:
         - models: A target `list` of `Module`
         - shared_modules: A `dict` of shared `torch.nn.Module` with name in `str`
-        - target_dict: A `dict` of optional target index as key in `int` and name of target as value in `str`
+        - target_dict: A `dict` of target index as key in `int` and name of target as value in `str`
     - Returns: A `TargetingModule` with given `models` that shares `shared_modules`
     """
     # loop for shared modules

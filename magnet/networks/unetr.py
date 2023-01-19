@@ -1,9 +1,6 @@
-from __future__ import annotations
-from typing import Any, Optional, Union, Sequence
-
-import torch
-
 from monai.networks.nets.unetr import UNETR
+from torchmanager_core import torch
+from torchmanager_core.typing import Optional, Union, Sequence
 
 
 class UNETRWithMultiModality(UNETR):

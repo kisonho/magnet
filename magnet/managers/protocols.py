@@ -1,4 +1,4 @@
-from torchmanager_core import abc, torch
+from torchmanager_core import abc
 from torchmanager_core.typing import Protocol, runtime_checkable
 from torchmanager_monai.protocols import SubResulting
 

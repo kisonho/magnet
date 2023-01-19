@@ -1,7 +1,5 @@
-from __future__ import annotations
-from typing import Any, Sized
-
-import abc
+from torchmanager_core import abc
+from torchmanager_core.typing import Any, Self, Sized
 from torch.utils.data import Dataset
 
 try:
@@ -35,7 +33,7 @@ class MultiDataset(Dataset, abc.ABC):
         super().__init__()
         self.__datasets = list(datasets)
 
-    def __add__(self, other: Dataset[Any]) -> MultiDataset:
+    def __add__(self, other: Dataset[Any]) -> Self:
         self.datasets.append(other)
         return self
 
@@ -71,7 +69,7 @@ class EquivalentDataset(MultiDataset):
                 raise TypeError("There are datasets that do not confirm to `Sized` protocol given.")
             assert length == len(d), "The given datasets must contain equivalent size."
 
-    def __add__(self, other: Dataset[Any]) -> EquivalentDataset:
+    def __add__(self, other: Dataset[Any]) -> Self:
         if not isinstance(other, Sized):
             raise TypeError("The dataset does not confirm to `Sized` protocol given.")
         if len(self.datasets) > 0:

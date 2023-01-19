@@ -1,6 +1,6 @@
 import torch, torchmanager as tm
 from torchmanager.train import LrScheduleFreq as Frequency
-from torchmanager_core.typing import Any, Callable, Generic, Module, Optional, SizedIterable, Union
+from torchmanager_core.typing import Any, Generic, Module, Optional, SizedIterable, Union
 
 from .protocols import Targeting
 

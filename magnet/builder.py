@@ -1,4 +1,4 @@
-from typing import Sequence, Union
+from torchmanager_core.typing import Sequence, Union
 
 from .nn import MAGNET, share_modules
 from .networks.unetr import UNETRWithDictOutput as UNETR

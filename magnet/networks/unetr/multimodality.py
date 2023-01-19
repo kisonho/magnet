@@ -1,8 +1,7 @@
+from monai.networks.nets.unetr import UNETR
 from torchmanager_core import torch
 from torchmanager_core.view import warnings
 from torchmanager_core.typing import Optional, Union, Sequence
-
-from monai.networks.nets.unetr import UNETR
 
 
 class UNETRWithMultiModality(UNETR):

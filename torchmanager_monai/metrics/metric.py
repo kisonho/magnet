@@ -1,7 +1,7 @@
-from typing import Optional
-
-import torch
 from torchmanager.metrics import * # type: ignore
+
+from torchmanager_core import torch
+from torchmanager_core.typing import Optional, Union
 from monai.metrics.metric import CumulativeIterationMetric as _CumulativeIterationMetric
 
 class CumulativeIterationMetric(Metric):
@@ -20,8 +20,10 @@ class CumulativeIterationMetric(Metric):
     @property
     def result(self) -> torch.Tensor:
         # get results
-        results = self._metric_fn.aggregate()
-        assert isinstance(results, torch.Tensor)
+        results: Union[torch.Tensor, tuple[torch.Tensor, torch.Tensor]] = self._metric_fn.aggregate()
+        if not isinstance(results, torch.Tensor):
+            results, _ = results
+        assert isinstance(results, torch.Tensor), f"Results type ({type(results)}) are not a valid `torch.Tensor`."
         return torch.nanmean(results)
 
     @property

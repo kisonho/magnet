@@ -1,4 +1,4 @@
-import torch
+from torchmanager_core import torch
 from torchmanager_core.typing import Any, Generic, Module, Optional, Union
 
 

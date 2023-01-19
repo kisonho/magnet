@@ -1,6 +1,5 @@
+from torchmanager_core import abc
 from torchmanager_core.typing import Any, Self, Sized
-
-import abc
 from torch.utils.data import Dataset
 
 try:

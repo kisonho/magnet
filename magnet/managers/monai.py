@@ -148,9 +148,9 @@ class Manager(_Manager[Module], _TargetingManager[Module]):
 
         # repack output
         if self.return_dict:
-            y = {"out": y_out}
+            y = {"out": y}
         else:
-            y = y_out
+            y = y
 
         # forward metrics
         for name, fn in self.compiled_metrics.items():

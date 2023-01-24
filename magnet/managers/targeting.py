@@ -2,7 +2,7 @@ import torchmanager as tm
 from torchmanager.data import Dataset, DataLoader
 from torchmanager.train import LrScheduleFreq as Frequency
 from torchmanager_core import torch
-from torchmanager_core.typing import Any, Module, Optional, SizedIterable, Union
+from torchmanager_core.typing import Any, Module, Optional, Union
 
 from .protocols import Targeting
 

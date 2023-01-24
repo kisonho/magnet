@@ -1,4 +1,5 @@
 import torchmanager as tm
+from torchmanager.data import Dataset, DataLoader
 from torchmanager.train import LrScheduleFreq as Frequency
 from torchmanager_core import torch
 from torchmanager_core.typing import Any, Module, Optional, SizedIterable, Union
@@ -57,7 +58,7 @@ class Manager(tm.Manager[Module]):
         self.__target = 0
         self.__freq = target_freq
 
-    def _train(self, dataset: SizedIterable, show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def _train(self, dataset: Union[DataLoader[Any], Dataset[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         """
         The single training step for an epoch
 
@@ -105,7 +106,7 @@ class Manager(tm.Manager[Module]):
             return super()._train(dataset, show_verbose=show_verbose, **kwargs)
 
     @torch.no_grad()
-    def test(self, dataset: SizedIterable, show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def test(self, dataset: Union[DataLoader[Any], Dataset[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         # initialize
         summary: dict[str, float] = {}
 

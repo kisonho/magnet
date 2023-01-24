@@ -1,5 +1,6 @@
 from monai.data.utils import decollate_batch
 from monai.inferers.utils import sliding_window_inference
+from torchmanager.data import DataLoader, Dataset
 from torchmanager_core import devices, torch, view
 from torchmanager_core.typing import Any, Callable, Collection, Module, Optional, Sequence, SizedIterable, Union
 from torchmanager_monai import Manager as _Manager
@@ -80,7 +81,7 @@ class Manager(_Manager[Module], _TargetingManager[Module]):
         return predictions
 
     @torch.no_grad()
-    def test(self, dataset: Union[Collection, dict[str, Collection]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def test(self, dataset: Union[DataLoader[Any], Dataset[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         # initialize
         summary: dict[str, float] = {}
 

@@ -1,8 +1,9 @@
 import torch, torchmanager as tm
 from monai.data.utils import decollate_batch
 from monai.inferers.utils import sliding_window_inference
+from torchmanager.data import DataLoader, Dataset
 from torchmanager_core import devices, view
-from torchmanager_core.typing import Any, Callable, Generic, Module, Sequence, SizedIterable, Union, Optional
+from torchmanager_core.typing import Any, Callable, Generic, Module, Sequence, Union, Optional
 
 from .protocols import SubResulting
 
@@ -30,7 +31,7 @@ class Manager(tm.Manager[Module], Generic[Module]):
         self._roi_size = roi_size
 
     @torch.no_grad()
-    def predict(self, dataset: SizedIterable, device: Optional[Union[torch.device, list[torch.device]]] = None, use_multi_gpus: bool = False, show_verbose: bool = False) -> list[torch.Tensor]:
+    def predict(self, dataset: Union[DataLoader[dict[str, Any]], Dataset[dict[str, Any]]], device: Optional[Union[torch.device, list[torch.device]]] = None, use_multi_gpus: bool = False, show_verbose: bool = False) -> list[torch.Tensor]:
         # find available device
         cpu, device, target_devices = devices.search(None if use_multi_gpus else device)
         if device == cpu and len(target_devices) < 2:
@@ -72,7 +73,7 @@ class Manager(tm.Manager[Module], Generic[Module]):
         return predictions
 
     @torch.no_grad()
-    def test(self, dataset: SizedIterable, device: Optional[torch.device] = None, use_multi_gpus: bool = False, show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def test(self, dataset: Union[DataLoader[Any], Dataset[Any]], device: Optional[torch.device] = None, use_multi_gpus: bool = False, show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         # initialize
         summary = super().test(dataset, device=device, use_multi_gpus=use_multi_gpus, show_verbose=show_verbose, **kwargs)
 

@@ -30,7 +30,7 @@ setup(name='magnet',
     },
     install_requires=[
         'monai>=0.9.0',
-        'pytorch>=1.12.1',
+        'torch>=1.12.1',
         'torchmanager>=1.0.4',
         'tqdm',
     ],

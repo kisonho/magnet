@@ -5,8 +5,8 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(name='magnet',
-    version='1.0.2',
-    description='PyTorch training manager (v1.0.2)',
+    version='1.0.3',
+    description='PyTorch training manager (v1.0.3)',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Kison Ho',
@@ -16,6 +16,7 @@ setup(name='magnet',
         'magnet.data',
         'magnet.managers',
         'magnet.nn',
+        'magnet.networks',
         'torchmanager_monai',
         'torchmanager_monai.metrics',
     ],

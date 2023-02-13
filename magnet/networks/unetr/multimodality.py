@@ -22,7 +22,7 @@ class UNETRWithMultiModality(UNETR):
 
     def forward(self, x_in: torch.Tensor):
         if not self.training and self.copy_modality is not None:
-            x_copy = x_in[:, :1] if self.copy_modality is True else torch.zeros_like(x_in[:, :1, ...])
+            x_copy = x_in.mean(dim=1).unsqueeze(1) if self.copy_modality is True else torch.zeros_like(x_in[:, :1, ...])
             x_in = x_in[:, :1, ...]
             for _ in range(1, self.encoder1.layer.conv1.in_channels):
                 x_in = torch.cat([x_in, x_copy], dim=1)

@@ -1,8 +1,9 @@
-# MAGNET: The First Attempt Towards Modality-Agnostic Networks for Medical Image Segmentation
+# MAGNET: A Modality-Agnostic Networks for Medical Image Segmentation
 Currently under review for *ISBI 2023*
 
 ## Pre-request
 * Python >= 3.9
+* PyTorch >= 1.12.1
 * [torchmanager](https://github.com/kisonho/torchmanager) >= 1.0.4
 * Monai >= 0.9.0
 

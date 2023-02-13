@@ -81,7 +81,7 @@ class Manager(_Manager[Module], _TargetingManager[Module]):
         return predictions
 
     @torch.no_grad()
-    def test(self, dataset: Union[DataLoader[Any], Dataset[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def test(self, dataset: Union[DataLoader[Any], Dataset[Any], dict[str, Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         # initialize
         summary: dict[str, float] = {}
 

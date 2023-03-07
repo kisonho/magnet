@@ -38,7 +38,7 @@ class Manager(_Manager[Module], _TargetingManager[Module]):
         self.return_dict = return_dict
 
     @torch.no_grad()
-    def predict(self, dataset: SizedIterable, device: Optional[Union[torch.device, list[torch.device]]] = None, use_multi_gpus: bool = False, show_verbose: bool = False) -> list[torch.Tensor]:
+    def predict(self, dataset: Union[DataLoader[Any], Dataset[Any]], device: Optional[Union[torch.device, list[torch.device]]] = None, use_multi_gpus: bool = False, show_verbose: bool = False) -> list[torch.Tensor]:
         # find available device
         cpu, device, target_devices = devices.search(None if use_multi_gpus else device)
         if device == cpu and len(target_devices) < 2:
@@ -59,7 +59,7 @@ class Manager(_Manager[Module], _TargetingManager[Module]):
             return predictions
         progress_bar = view.tqdm(total=len(dataset)) if show_verbose else None
         self.to(device)
-        t = self.target if self.target is not None else 0
+        t = self.target if self.target is not None and not isinstance(self.target, list) else 0
 
         # loop the dataset
         for data in dataset:
@@ -122,7 +122,7 @@ class Manager(_Manager[Module], _TargetingManager[Module]):
     def test_step(self, x_test: torch.Tensor, y_test: torch.Tensor) -> dict[str, float]:
         # initialize
         summary: dict[str, float] = {}
-        t = self.target if self.target is not None else 0
+        t = self.target if self.target is not None and not isinstance(self.target, list) else 0
 
         # forward pass
         val_outputs = sliding_window_inference(x_test, self._roi_size, 1, self.model)

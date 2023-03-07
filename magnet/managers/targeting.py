@@ -20,15 +20,15 @@ class Manager(tm.Manager[Module]):
     """
 
     __freq: Optional[Frequency]
-    __target: Optional[int]
+    __target: Optional[Union[list[int], int]]
 
     @property
-    def target(self) -> Optional[int]:
+    def target(self) -> Optional[Union[list[int], int]]:
         """The targeted modality index"""
         return self.__target
 
     @target.setter
-    def target(self, t: Optional[int]) -> None:
+    def target(self, t: Optional[Union[list[int], int]]) -> None:
         self.__target = t
         model = self.model.module if isinstance(self.model, torch.nn.parallel.DataParallel) else self.model
         if isinstance(model, Targeting):

@@ -16,7 +16,7 @@ class MAGNET(torch.nn.Module, Generic[Module]):
         - target_modules: A `torch.nn.ModuleList` of all modules
     """
 
-    target: Optional[int]
+    target: Optional[Union[list[int], int]]
     target_dict: dict[int, str]
     target_modules: torch.nn.ModuleList
 
@@ -40,13 +40,13 @@ class MAGNET(torch.nn.Module, Generic[Module]):
 
     def forward(self, x_in: torch.Tensor, *args: Any, **kwargs: Any) -> Any:
         # check if input is in multi-modality mode
-        if x_in.shape[1] > 1:
+        if x_in.shape[1] > 1 or isinstance(self.target, list):
             # initialize output
             preds: list[Any] = []
+            target = self.target if isinstance(self.target, list) else self.target_dict
 
-            # loop for each modality
-            for i, t in enumerate(self.target_dict):
-                # forward each modality
+            # forward each modality
+            for i, t in enumerate(target):
                 if x_in.shape[1] > len(self.target_dict):
                     x = x_in[:, t : t + 1, ...]
                 else:
@@ -54,8 +54,6 @@ class MAGNET(torch.nn.Module, Generic[Module]):
                 if x.shape[1] < 1:
                     raise ValueError(f"No modality '{self.target_dict[t]}' (id={i}) found in the input.")
                 y_pred: Union[torch.Tensor, dict[str, torch.Tensor]] = self.target_modules[t](x, *args, **kwargs)
-
-                # append to preds
                 preds.append(y_pred)
 
             # fuse

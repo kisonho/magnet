@@ -1,5 +1,5 @@
 from torchmanager_core import abc
-from torchmanager_core.typing import Any, Self, Sized
+from torchmanager_core.typing import Any, Optional, Self, Sized, Union
 from torch.utils.data import Dataset
 
 try:
@@ -94,7 +94,6 @@ class TargetedDataset(MultiDataset):
     A dataset for mixed targets of datasets
 
     * extends: `MultiDataset`
-    * implements: `Targeting`
 
     - Properties:
         - datasets: A `list` of multiple datasets

@@ -69,8 +69,8 @@ if __name__ == "__main__":
 
     # initialize optimizer, loss, metrics, and post processing
     optimizer = torch.optim.SGD(model.parameters(), 0.001, momentum=0.6)
-    loss_fn = losses.Loss(DiceCELoss(to_onehot_y=True, softmax=True), target="out")
-    dice_fn = metrics.CumulativeIterationMetric(DiceMetric(include_background=True, reduction="none", get_not_nans=False), target="out")
+    loss_fn = losses.Loss(DiceCELoss(to_onehot_y=True, softmax=True))
+    dice_fn = metrics.CumulativeIterationMetric(DiceMetric(include_background=True, reduction="none", get_not_nans=False))
     metric_fns: dict[str, metrics.Metric] = {"val_dice": dice_fn}
     post_labels = [data.transforms.AsDiscrete(to_onehot=num_classes) for _ in range(2)]
     post_predicts = [data.transforms.AsDiscrete(argmax=True, to_onehot=num_classes) for _ in range(2)]

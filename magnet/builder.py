@@ -1,10 +1,11 @@
+import copy
 from torchmanager_core.typing import Sequence, Union
 
 from .nn import MAGNET, share_modules
-from .networks.unetr import UNETRWithDictOutput as UNETR
+from .networks.unetr import UNETR
 
 
-def build(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int], target_dict: dict[int, str]) -> MAGNET[UNETR]:
+def build(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int], target_dict: dict[int, str], copy_modality: bool = False) -> MAGNET[UNETR]:
     """
     Function to load a MAGNET
 
@@ -13,6 +14,7 @@ def build(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int
         - num_classes: An `int` of the number of output classes
         - img_size: Either a `Sequence` of image size in `int` or an `int` of single image size
         - target_dict: A `dict` of target index as key in `int` and name of target as value in `str`
+        - copy_modality: A `bool` flag of if copying model to other modalities so that all models have the same initialized weights
     - Returns: A `MAGNET` with `.networks.unetr.UNETRWithDictOutput` as its target modules
     """
     # initialize
@@ -27,10 +29,15 @@ def build(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int
     elif not img_size > 0:
         raise ValueError(f"The image size must be a positive number, got {img_size}.")
     models: list[UNETR] = []
+    init_model = UNETR(1, num_classes, img_size=img_size, feature_size=16, hidden_size=768, mlp_dim=3072, num_heads=12, pos_embed="perceptron", norm_name="instance", res_block=True, dropout_rate=0.0) if copy_modality else None
 
     # initialize models for all modalities
     for _ in range(in_channels):
-        model = UNETR(1, num_classes, img_size=img_size, feature_size=16, hidden_size=768, mlp_dim=3072, num_heads=12, pos_embed="perceptron", norm_name="instance", res_block=True, dropout_rate=0.0)
+        if copy_modality:
+            assert init_model is not None, "Build model failed."
+            model = copy.deepcopy(init_model)
+        else:
+            model = UNETR(1, num_classes, img_size=img_size, feature_size=16, hidden_size=768, mlp_dim=3072, num_heads=12, pos_embed="perceptron", norm_name="instance", res_block=True, dropout_rate=0.0)
         models.append(model)
 
     # share decoders

@@ -2,7 +2,7 @@
 Main training script to train a UNETR
 """
 import logging, os, torch
-from magnet.networks import UNETRWithDictOutput as UNETR
+from magnet.networks import UNETR
 from monai.data.dataloader import DataLoader
 from monai.data.utils import pad_list_data_collate
 from monai.losses.dice import DiceCELoss
@@ -57,8 +57,8 @@ if __name__ == "__main__":
 
     # initialize optimizer, loss, metrics, and post processing
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=1e-5)
-    loss_fn = losses.Loss(DiceCELoss(to_onehot_y=True, softmax=True), target="out")
-    dice_fn = metrics.CumulativeIterationMetric(DiceMetric(include_background=True, reduction="none", get_not_nans=False), target="out")
+    loss_fn = losses.Loss(DiceCELoss(to_onehot_y=True, softmax=True))
+    dice_fn = metrics.CumulativeIterationMetric(DiceMetric(include_background=True, reduction="none", get_not_nans=False))
     metric_fns: dict[str, metrics.Metric] = {"val_dice": dice_fn}
     post_labels = data.transforms.AsDiscrete(to_onehot=num_classes)
     post_predicts = data.transforms.AsDiscrete(argmax=True, to_onehot=num_classes)

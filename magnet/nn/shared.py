@@ -1,5 +1,5 @@
 from torchmanager_core import torch
-from torchmanager_core.typing import Any, Generic, Module, Union
+from torchmanager_core.typing import Any, Generic, Module, Optional, Union
 
 
 class MAGNET(torch.nn.Module, Generic[Module]):
@@ -11,12 +11,12 @@ class MAGNET(torch.nn.Module, Generic[Module]):
 
     - Properties:
         - num_targets: An `int` of the total number of modalities in MAGNET
-        - target: An `int` of the target index in the module list
+        - target: An optional `int` of the target index in the module list
         - target_dict: A `dict` of available target modality as key in `int` and name of target as value in `str`
         - target_modules: A `torch.nn.ModuleList` of all modules
     """
 
-    target: int
+    target: Optional[Union[list[int], int]]
     target_dict: dict[int, str]
     target_modules: torch.nn.ModuleList
 
@@ -34,20 +34,19 @@ class MAGNET(torch.nn.Module, Generic[Module]):
             - target_dict: A `dict` of available target index as key in `int` and name of target as value in `str`
         """
         super().__init__()
-        self.target = 0
+        self.target = None
         self.target_modules = torch.nn.ModuleList(list(modules))
         self.target_dict = target_dict
 
-    def forward(self, x_in: torch.Tensor, *args: Any, **kwargs: Any) -> Union[torch.Tensor, dict[str, torch.Tensor]]:
+    def forward(self, x_in: torch.Tensor, *args: Any, **kwargs: Any) -> Any:
         # check if input is in multi-modality mode
-        if x_in.shape[1] > 1:
+        if x_in.shape[1] > 1 or isinstance(self.target, list):
             # initialize output
-            preds: list[torch.Tensor] = []
-            preds_dict: dict[str, list[torch.Tensor]] = {}
+            preds: list[Any] = []
+            target = self.target if isinstance(self.target, list) else self.target_dict
 
-            # loop for each modality
-            for i, t in enumerate(self.target_dict):
-                # forward each modality
+            # forward each modality
+            for i, t in enumerate(target):
                 if x_in.shape[1] > len(self.target_dict):
                     x = x_in[:, t : t + 1, ...]
                 else:
@@ -55,28 +54,38 @@ class MAGNET(torch.nn.Module, Generic[Module]):
                 if x.shape[1] < 1:
                     raise ValueError(f"No modality '{self.target_dict[t]}' (id={i}) found in the input.")
                 y_pred: Union[torch.Tensor, dict[str, torch.Tensor]] = self.target_modules[t](x, *args, **kwargs)
+                preds.append(y_pred)
 
-                # check prediction type
-                if isinstance(y_pred, dict):
-                    # check output types
-                    assert len(preds) == 0, "Outputs for modalities must be in same format."
-
-                    # loop for items in dictionary
-                    for key, pred in y_pred.items():
-                        if key not in preds_dict:
-                            preds_dict[key] = [pred.unsqueeze(1)]
-                        else:
-                            preds_dict[key].append(pred)
-                else:
-                    assert len(preds_dict) == 0, "Outputs for modalities must be in same format."
-                    preds.append(y_pred.unsqueeze(1))
-
-            # calculate mean or max
-            assert len(preds) > 0 or len(preds_dict) > 0, "Fetch output failed, no modality was passed."
-            y = torch.concat(preds, dim=1).sum(dim=1) if len(preds) > 0 else {key: torch.cat(values, dim=1).sum(dim=1) for key, values in preds_dict.items()}
-            return y
+            # fuse
+            return self.fuse(preds)
+        elif self.target is None:
+            return self.target_modules[0](x_in, *args, **kwargs)
         else:
             return self.target_modules[self.target](x_in, *args, **kwargs)
+
+    def fuse(self, preds: list[Any]) -> Union[torch.Tensor, dict[str, torch.Tensor]]:
+        # check predictions
+        assert len(preds) > 0, "Results must contain at least one predictions"
+
+        # check predictions type
+        if isinstance(preds[0], torch.Tensor):
+            preds_tensor: list[torch.Tensor] = preds
+            preds_tensor = [p.unsqueeze(1) for p in preds_tensor]
+            y = torch.concat(preds_tensor, dim=1) if self.training else torch.concat(preds_tensor, dim=1).sum(dim=1)
+        elif isinstance(preds[0], dict):
+            preds_dict: list[dict[str, torch.Tensor]] = preds
+            preds_dict_unsqueezed: dict[str, list[torch.Tensor]] = {name: [p[name].unsqueeze(1) for p in preds_dict] for name in preds[0].keys()}
+            y = {name: torch.concat(v, dim=1) for name, v in preds_dict_unsqueezed.items()} if self.training else {name: torch.concat(v, dim=1).sum(dim=1) for name, v in preds_dict_unsqueezed.items()}
+        else:
+            return NotImplemented
+        
+        # select modality
+        if self.training and self.target is not None and isinstance(y, torch.Tensor):
+            return torch.cat([y.sum(dim=1).unsqueeze(1), y[:, self.target, ...].unsqueeze(1)], dim=1)
+        elif self.training and self.target is not None and isinstance(y, dict):
+            return {name: torch.cat([v.sum(dim=1).unsqueeze(1), v[:, self.target, ...].unsqueeze(1)], dim=1) for name, v in y.items()}
+        else:
+            return y
 
 
 def share_modules(models: list[Module], shared_modules: dict[str, torch.nn.Module], target_dict: dict[int, str] = {}) -> MAGNET[Module]:

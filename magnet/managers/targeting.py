@@ -1,11 +1,13 @@
-import torch, torchmanager as tm
+import torchmanager as tm
+from torchmanager.data import Dataset, DataLoader
 from torchmanager.train import LrScheduleFreq as Frequency
-from torchmanager_core.typing import Any, Generic, Module, Optional, SizedIterable, Union
+from torchmanager_core import torch
+from torchmanager_core.typing import Any, Module, Optional, Union
 
 from .protocols import Targeting
 
 
-class Manager(tm.Manager[Module], Generic[Module]):
+class Manager(tm.Manager[Module]):
     """
     A training manager that trains with multiple mixed dataset
 
@@ -17,40 +19,46 @@ class Manager(tm.Manager[Module], Generic[Module]):
         - target_dict: A `dict` of available targets with the indices in `int` as keys and the names in `str` as values
     """
 
-    __freq: Frequency
-    __target: int
+    __freq: Optional[Frequency]
+    __target: Optional[Union[list[int], int]]
 
     @property
-    def target(self) -> int:
+    def target(self) -> Optional[Union[list[int], int]]:
         """The targeted modality index"""
         return self.__target
 
     @target.setter
-    def target(self, t: int) -> None:
+    def target(self, t: Optional[Union[list[int], int]]) -> None:
         self.__target = t
         model = self.model.module if isinstance(self.model, torch.nn.parallel.DataParallel) else self.model
         if isinstance(model, Targeting):
             model.target = t
 
     @property
-    def target_freq(self) -> Frequency:
+    def target_freq(self) -> Optional[Frequency]:
         """The target training frequency"""
         return self.__freq
 
     @property
-    def target_dict(self) -> dict[int, str]:
+    def target_dict(self) -> dict[Optional[int], str]:
         model = self.model.module if isinstance(self.model, torch.nn.parallel.DataParallel) else self.model
         if isinstance(model, Targeting):
             return model.target_dict
         else:
-            return {}
+            return {0: "all"}
 
-    def __init__(self, model: Module, optimizer: Optional[torch.optim.Optimizer] = None, loss_fn: Optional[Union[tm.losses.Loss, dict[str, tm.losses.Loss]]] = None, metrics: dict[str, tm.metrics.Metric] = {}, target_freq: Frequency = Frequency.EPOCH) -> None:
+    def __init__(self, model: Module, optimizer: Optional[torch.optim.Optimizer] = None, loss_fn: Optional[Union[tm.losses.Loss, dict[str, tm.losses.Loss]]] = None, metrics: dict[str, tm.metrics.Metric] = {}, target_freq: Optional[Frequency] = Frequency.EPOCH) -> None:
+        """
+        Constructor
+
+        - Parameters:
+            - target_freq: The update training `Frequency`
+        """
         super().__init__(model, optimizer, loss_fn, metrics)
         self.__target = 0
         self.__freq = target_freq
 
-    def _train(self, dataset: SizedIterable, show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def _train(self, dataset: Union[DataLoader[Any], Dataset[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         """
         The single training step for an epoch
 
@@ -79,10 +87,26 @@ class Manager(tm.Manager[Module], Generic[Module]):
                 for k, v in subsummary.items():
                     summary[f"{k}_{dataset.target_dict[t]}"] = v
             return summary
+        elif self.target_freq == Frequency.EPOCH:
+            for t in self.target_dict.keys():
+                # fetch target
+                self.target = t
+                if show_verbose:
+                    print(f"Training target {t} (Dataset {self.target_dict[t]})...")
+
+                # train model
+                subsummary = super()._train(dataset, show_verbose=show_verbose, **kwargs)
+                for k, v in subsummary.items():
+                    summary[f"{k}_{self.target_dict[t]}"] = v
+
+            # reset target
+            self.target = None
+            return summary
         else:
             return super()._train(dataset, show_verbose=show_verbose, **kwargs)
 
-    def test(self, dataset: SizedIterable, show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    @torch.no_grad()
+    def test(self, dataset: Union[DataLoader[Any], Dataset[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         # initialize
         summary: dict[str, float] = {}
 
@@ -91,10 +115,17 @@ class Manager(tm.Manager[Module], Generic[Module]):
             return super().test(dataset, show_verbose=show_verbose, **kwargs)
 
         # test datasets in one epoch
-        for t, (name, d) in enumerate(dataset.items()):
+        for m, d in dataset.items():
+            # fetch modality name
+            modality: Optional[int] = m
+            name = self.target_dict[modality]
+
+            # set target
             if show_verbose:
-                print(f"Target {t} (Dataset {name}):")
-            self.target = t
+                print(f"Target {modality} (Dataset {name}):")
+            self.target = modality
+
+            # test dataset
             try:
                 subsummary = super().test(d, show_verbose=show_verbose, **kwargs)
             except Exception as e:
@@ -106,28 +137,15 @@ class Manager(tm.Manager[Module], Generic[Module]):
         return summary
 
     def train_step(self, x_train: torch.Tensor, y_train: Any) -> dict[str, float]:
-        if self.target_freq == Frequency.EPOCH:
-            return super().train_step(x_train, y_train)
-        else:
+        if self.target_freq == Frequency.BATCH:
             # initialize summary
             summary = {}
 
             # loop for each target
             for t in range(x_train.shape[1]):
                 self.target = t
-                subsummary = super().train_step(x_train[:, t : t + 1, ...], y_train)
+                subsummary = super().train_step(x_train, y_train)
                 summary.update(subsummary)
             return summary
-
-    def unpack_data(self, data: Any) -> tuple[Any, Union[dict[str, Any], Any]]:
-        """
-        Unpacks data to input and target
-
-        - Parameters:
-            - data: `Any` kind of data object
-        - Returns: A `tuple` of `Any` kind of input and `Any` kind of target if model is not training, otherwise A `tuple` of `Any` kind of input and `dict` of name in `str` and `Any` kind of values for target
-        """
-        # load data
-        x_train, label = super().unpack_data(data)
-        y_train = {"out": label, "domain": torch.tensor([self.target] * len(x_train))} if self.model.training is True else label
-        return x_train, y_train
+        else:
+            return super().train_step(x_train, y_train)

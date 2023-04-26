@@ -1,5 +1,5 @@
 # MAGNET: A Modality-Agnostic Networks for Medical Image Segmentation
-Accept by *ISBI 2023*
+Accepted by *ISBI 2023*
 
 ## Pre-request
 * Python >= 3.9

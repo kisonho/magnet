@@ -40,7 +40,7 @@ class MAGNET(torch.nn.Module, Generic[Module]):
 
     def forward(self, x_in: torch.Tensor, *args: Any, **kwargs: Any) -> Any:
         # check if input is in multi-modality mode
-        if x_in.shape[1] > 1 or isinstance(self.target, list):
+        if x_in.shape[1] > 1:
             # initialize output
             preds: list[Any] = []
             target = self.target if isinstance(self.target, list) else self.target_dict
@@ -61,6 +61,7 @@ class MAGNET(torch.nn.Module, Generic[Module]):
         elif self.target is None:
             return self.target_modules[0](x_in, *args, **kwargs)
         else:
+            assert not isinstance(self.target, list), "Multiple targets are assigned but only one modality is given to the input."
             return self.target_modules[self.target](x_in, *args, **kwargs)
 
     def fuse(self, preds: list[Any]) -> Union[torch.Tensor, dict[str, torch.Tensor]]:

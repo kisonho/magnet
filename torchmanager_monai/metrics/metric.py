@@ -1,8 +1,8 @@
-from typing import Optional, Union
-
-import torch
 from torchmanager.metrics import * # type: ignore
+
 from monai.metrics.metric import CumulativeIterationMetric as _CumulativeIterationMetric
+from torchmanager_core import torch
+from torchmanager_core.typing import Optional
 
 class CumulativeIterationMetric(Metric):
     """
@@ -44,7 +44,7 @@ class CumulativeIterationMetric(Metric):
             - dim: An `int` of the dimension of subresult
             - target: An optional `str` of target name in `input` and `target` during direct calling
         """
-        super().__init__(metric_fn, target) # type: ignore
+        super().__init__(metric_fn, target=target) # type: ignore
         self.__dim = dim
 
     def reset(self) -> None:

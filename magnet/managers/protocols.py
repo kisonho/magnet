@@ -1,6 +1,5 @@
 from torchmanager_core import abc
 from torchmanager_core.typing import Optional, Protocol, Union, runtime_checkable
-from torchmanager_monai.protocols import SubResulting
 
 
 @runtime_checkable

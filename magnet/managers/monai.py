@@ -2,7 +2,7 @@ from monai.data.utils import decollate_batch
 from monai.inferers.utils import sliding_window_inference
 from torchmanager.data import DataLoader, Dataset
 from torchmanager_core import devices, torch, view
-from torchmanager_core.typing import Any, Callable, Collection, Module, Optional, Sequence, SizedIterable, Union
+from torchmanager_core.typing import Any, Callable, Module, Optional, Sequence, Union
 from torchmanager_monai import Manager as _Manager
 from torchmanager_monai.protocols import SubResulting
 

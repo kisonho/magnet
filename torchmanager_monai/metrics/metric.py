@@ -20,20 +20,26 @@ class CumulativeIterationMetric(Metric):
     @property
     def result(self) -> torch.Tensor:
         # get results
-        results = self._metric_fn.aggregate()
-        assert isinstance(results, torch.Tensor), f"Results type ({type(results)}) are not a valid `torch.Tensor`."
-        return torch.nanmean(results)
+        try:
+            results = self._metric_fn.aggregate()
+            assert isinstance(results, torch.Tensor), f"Results type ({type(results)}) are not a valid `torch.Tensor`."
+            return torch.nanmean(results)
+        except:
+            return torch.tensor(torch.nan)
 
     @property
     def sub_results(self) -> torch.Tensor:
         # get results
-        results = self._metric_fn.aggregate()
-        assert isinstance(results, torch.Tensor), f"Results type ({type(results)}) are not a valid `torch.Tensor`."
+        try:
+            results = self._metric_fn.aggregate()
+            assert isinstance(results, torch.Tensor), f"Results type ({type(results)}) are not a valid `torch.Tensor`."
 
-        # get sub dice
-        subdice = torch.nanmean(results, dim=self.__dim, keepdim=True)
-        subdice = subdice.unsqueeze(-1)
-        return subdice
+            # get sub dice
+            subdice = torch.nanmean(results, dim=self.__dim, keepdim=True)
+            subdice = subdice.unsqueeze(-1)
+            return subdice
+        except:
+            return torch.tensor(torch.nan)
 
     def __init__(self, metric_fn: _CumulativeIterationMetric, dim: int = 0, target: Optional[str] = None) -> None:
         """

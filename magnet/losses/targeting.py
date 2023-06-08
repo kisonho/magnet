@@ -7,7 +7,7 @@ class MAGLoss(MultiLosses):
     modality: Optional[int]
 
     def __init__(self, losses: list[Loss], modality: Optional[int] = None, target: Optional[str] = None, weight: float = 1) -> None:
-        super().__init__(losses, target, weight)
+        super().__init__(losses, target=target, weight=weight)
         self.modality = modality
         
         # check modality targeted

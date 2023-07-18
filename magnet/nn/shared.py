@@ -47,7 +47,7 @@ class MAGNET(torch.nn.Module, Generic[Module]):
 
             # forward each modality
             for i, t in enumerate(target):
-                if x_in.shape[1] > len(self.target_dict):
+                if x_in.shape[1] > len(target):
                     x = x_in[:, t : t + 1, ...]
                 else:
                     x = x_in[:, i : i + 1, ...]

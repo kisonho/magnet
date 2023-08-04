@@ -1,6 +1,6 @@
 # MAGNET: A Modality-Agnostic Networks for Medical Image Segmentation
 Accepted by *ISBI 2023* \
-Notice: This version contains improved features but will note affect the results. For original code used in paper, check the original [v1.0](https://github.com/kisonho/magnet/tree/stable-1.0)
+Notice: This version contains improved features but will not affect the results. For original code used in paper, check the original [v1.0](https://github.com/kisonho/magnet/tree/stable-1.0)
 
 ## Pre-request
 * Python >= 3.9

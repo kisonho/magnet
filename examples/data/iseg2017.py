@@ -5,7 +5,7 @@ from typing import Union
 from .datasets.iseg import ImageType, ISeg
 from .transforms import TransformOptions, load_transforms
 
-def load(root_dir: str, img_size: tuple[int, int, int], transform_options: TransformOptions, shuffle: bool = False, split: list[int] = [6, 1, 3], img_type: ImageType = ImageType.IMG) -> tuple[ISeg, ISeg, ISeg, int, int]:
+def load(root_dir: str, img_size: tuple[int, ...], transform_options: TransformOptions, split: list[int] = [6, 1, 3], img_type: ImageType = ImageType.IMG) -> tuple[ISeg, ISeg, ISeg, int, int]:
     '''
     Load iSeg2017 dataset
 
@@ -34,7 +34,7 @@ def load(root_dir: str, img_size: tuple[int, int, int], transform_options: Trans
 
     # load dataset
     train_val_amount = split[0] + split[1]
-    train_val_dataset = ISeg(root_dir, data_prefix=[f"subject-{i}" for i in range(1, train_val_amount+1)], shuffle=shuffle, transforms=training_transform, type=img_type)
+    train_val_dataset = ISeg(root_dir, data_prefix=[f"subject-{i}" for i in range(1, train_val_amount+1)], shuffle=True, transforms=training_transform, type=img_type)
     testing_dataset = ISeg(root_dir, data_prefix=[f"subject-{i}" for i in range(11 - split[-1], 11)], transforms=testing_transform, type=img_type)
     train_dataset, val_dataset = train_val_dataset.split(split[0] / train_val_amount)
     val_dataset.transforms = testing_transform

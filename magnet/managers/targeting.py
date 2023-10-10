@@ -2,7 +2,7 @@ import torchmanager as tm
 from torchmanager.data import Dataset, DataLoader
 from torchmanager.callbacks import Frequency
 from torchmanager_core import torch
-from torchmanager_core.typing import Any, Module, Optional, Union
+from torchmanager_core.typing import Any, Collection, Module, Optional, Union
 
 from .protocols import Targeting
 
@@ -107,7 +107,7 @@ class Manager(tm.Manager[Module]):
             return super()._train(dataset, show_verbose=show_verbose, **kwargs)
 
     @torch.no_grad()
-    def test(self, dataset: Union[DataLoader[Any], Dataset[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def test(self, dataset: Union[DataLoader[Any], Dataset[Any], Collection[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         # initialize
         summary: dict[str, float] = {}
 

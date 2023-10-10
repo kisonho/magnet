@@ -5,7 +5,7 @@ from typing import Union
 from .datasets.iseg import ImageType, ISeg
 from .transforms import TransformOptions, load_transforms
 
-def load(root_dir: str, img_size: tuple[int, int, int], transform_options: TransformOptions, split: list[int] = [6, 1, 3], img_type: ImageType = ImageType.IMG) -> tuple[ISeg, ISeg, ISeg, int, int]:
+def load(root_dir: str, img_size: tuple[int, ...], transform_options: TransformOptions, split: list[int] = [6, 1, 3], img_type: ImageType = ImageType.IMG) -> tuple[ISeg, ISeg, ISeg, int, int]:
     '''
     Load iSeg2017 dataset
 

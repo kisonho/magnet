@@ -73,7 +73,7 @@ class Manager(tm.Manager[Module], Generic[Module]):
         return predictions
 
     @torch.no_grad()
-    def test(self, dataset: Union[DataLoader[Any], Dataset[Any]], device: Optional[torch.device] = None, use_multi_gpus: bool = False, show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def test(self, dataset: Union[DataLoader[Any], Dataset[Any]], device: Optional[Union[torch.device, list[torch.device]]] = None, use_multi_gpus: bool = False, show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         # initialize
         summary = super().test(dataset, device=device, use_multi_gpus=use_multi_gpus, show_verbose=show_verbose, **kwargs)
 

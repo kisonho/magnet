@@ -31,9 +31,8 @@ class Manager(tm.Manager[Module]):
     @target.setter
     def target(self, t: Optional[Union[list[int], int]]) -> None:
         self.__target = t
-        model = self.model.module if isinstance(self.model, torch.nn.parallel.DataParallel) else self.model
-        if isinstance(model, Targeting):
-            model.target = t
+        if isinstance(self.raw_model, Targeting):
+            self.raw_model.target = t
 
     @property
     def target_freq(self) -> Optional[Frequency]:
@@ -41,14 +40,18 @@ class Manager(tm.Manager[Module]):
         return self.__freq
 
     @property
-    def target_dict(self) -> dict[Optional[int], str]:
-        model = self.model.module if isinstance(self.model, torch.nn.parallel.DataParallel) else self.model
-        if isinstance(model, Targeting):
-            return model.target_dict
+    def target_dict(self) -> dict[int, str]:
+        if isinstance(self.raw_model, Targeting):
+            return self.raw_model.target_dict
         else:
             return {0: "all"}
 
-    def __init__(self, model: Module, optimizer: Optional[torch.optim.Optimizer] = None, loss_fn: Optional[Union[tm.losses.Loss, dict[str, tm.losses.Loss]]] = None, metrics: dict[str, tm.metrics.Metric] = {}, target_freq: Optional[Frequency] = Frequency.EPOCH) -> None:
+    @target_dict.setter
+    def target_dict(self, target_dict: dict[int, str]) -> None:
+        if isinstance(self.raw_model, Targeting):
+            self.raw_model.target_dict = target_dict
+
+    def __init__(self, model: Module, optimizer: Optional[torch.optim.Optimizer] = None, loss_fn: Optional[Union[tm.losses.Loss, dict[str, tm.losses.Loss]]] = None, metrics: dict[str, tm.metrics.Metric] = {}, target_freq: Optional[Frequency] = None) -> None:
         """
         Constructor
 
@@ -107,35 +110,34 @@ class Manager(tm.Manager[Module]):
             return super()._train(dataset, show_verbose=show_verbose, **kwargs)
 
     @torch.no_grad()
-    def test(self, dataset: Union[DataLoader[Any], Dataset[Any], Collection[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def test(self, dataset: Union[DataLoader[Any], Dataset[Any], Collection[Any], dict[Optional[int], Union[DataLoader[Any], Dataset[Any], Collection[Any]]]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         # initialize
         summary: dict[str, float] = {}
 
         # check if dataset is dictionary
-        if not isinstance(dataset, dict):
+        if isinstance(dataset, dict):
+            # test datasets in one epoch
+            for modality, d in dataset.items():
+                # fetch modality name
+                name = self.target_dict[modality] if modality is not None else "all"
+
+                # set target
+                if show_verbose:
+                    print(f"Target {modality} (Dataset {name}):")
+                self.target = modality
+
+                # test dataset
+                try:
+                    subsummary = super().test(d, show_verbose=show_verbose, **kwargs)
+                except Exception as e:
+                    raise RuntimeError(f"Testing dataset '{name}' failed") from e
+                for k, v in subsummary.items():
+                    summary[f"{k}_{name}"] = v
+
+            # reset loss fn
+            return summary
+        else:
             return super().test(dataset, show_verbose=show_verbose, **kwargs)
-
-        # test datasets in one epoch
-        for m, d in dataset.items():
-            # fetch modality name
-            modality: Optional[int] = m
-            name = self.target_dict[modality]
-
-            # set target
-            if show_verbose:
-                print(f"Target {modality} (Dataset {name}):")
-            self.target = modality
-
-            # test dataset
-            try:
-                subsummary = super().test(d, show_verbose=show_verbose, **kwargs)
-            except Exception as e:
-                raise RuntimeError(f"Testing dataset '{name}' failed") from e
-            for k, v in subsummary.items():
-                summary[f"{k}_{name}"] = v
-
-        # reset loss fn
-        return summary
 
     def train_step(self, x_train: torch.Tensor, y_train: Any) -> dict[str, float]:
         if self.target_freq == Frequency.BATCH:

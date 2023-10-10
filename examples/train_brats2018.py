@@ -71,9 +71,9 @@ if __name__ == "__main__":
         param.register_hook(gradients_hook_fn)
 
     # initialize losses
-    dice_losses = [losses.Loss(DiceCELoss(to_onehot_y=True, softmax=True)) for _ in range(in_channels + 1)]
-    kldiv_losses: list[losses.Loss] = [losses.PixelWiseKLDiv(softmax_temperature=config.temperature, weight=config.distillation_lambda) for _ in range(in_channels)]
-    mse_losses = [losses.Loss(torch.nn.MSELoss(reduction='mean'), weight=config.distillation_gamma) for _ in range(in_channels)]
+    dice_losses: list[torch.nn.Module] = [losses.Loss(DiceCELoss(to_onehot_y=True, softmax=True)) for _ in range(in_channels + 1)]
+    kldiv_losses: list[torch.nn.Module] = [losses.PixelWiseKLDiv(softmax_temperature=config.temperature, weight=config.distillation_lambda) for _ in range(in_channels)]
+    mse_losses: list[torch.nn.Module] = [losses.Loss(torch.nn.MSELoss(reduction='mean'), weight=config.distillation_gamma) for _ in range(in_channels)]
     loss_fn = losses.MAGSelfDistillationLoss(dice_losses, kldiv_losses)
     loss_fn = losses.MAGFeatureDistillationLoss(loss_fn, mse_losses, features_dtype=torch.double)
 

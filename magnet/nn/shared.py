@@ -40,9 +40,25 @@ class MAGNET(torch.nn.Module, Generic[Module]):
         self.target_modules = torch.nn.ModuleList(list(modules))
         self.target_dict = target_dict
 
-    def forward(self, x_in: torch.Tensor, *args: Any, **kwargs: Any) -> Any:
-        # check if input is in multi-modality mode
-        if x_in.shape[1] > 1:
+    def forward(self, x_in: Union[torch.Tensor, list[torch.Tensor]], *args: Any, **kwargs: Any) -> Any:
+        # check input type
+        if not isinstance(x_in, torch.Tensor):
+            # initialize output
+            preds: list[Any] = []
+            target = self.target if isinstance(self.target, list) else self.target_dict
+
+            # forward each modality
+            for i, t in enumerate(target):
+                if len(x_in) > len(self.target_dict):
+                    x = x_in[t]
+                else:
+                    x = x_in[i]
+                y_pred: Union[torch.Tensor, dict[str, torch.Tensor]] = self.target_modules[t](x, *args, **kwargs)
+                preds.append(y_pred)
+
+            # fuse
+            return self.fuse(preds)
+        elif x_in.shape[1] > 1:
             # initialize output
             preds: list[Any] = []
             target = self.target if isinstance(self.target, list) else self.target_dict
@@ -135,7 +151,7 @@ class MAGNET2(MAGNET[Module]):
         self.decoder = decoder
         self.return_features = return_features
 
-    def forward(self, x_in: Union[dict[str, Any], torch.Tensor], *args: Any, **kwargs: Any) -> Any:
+    def forward(self, x_in: Union[torch.Tensor, list[torch.Tensor], dict[str, Any]], *args: Any, **kwargs: Any) -> Any:
         # unpack inputs
         if isinstance(x_in, dict):
             x = x_in['image']

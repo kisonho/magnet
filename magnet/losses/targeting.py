@@ -1,13 +1,15 @@
-from torchmanager.losses import Loss, MultiLosses
+from torchmanager.losses import Loss
 from torchmanager_core import torch, _raise
 from torchmanager_core.typing import Any, Optional
 
 
-class MAGLoss(MultiLosses):
+class MAGLoss(Loss):
+    losses: torch.nn.ModuleList
     modality: Optional[int]
 
-    def __init__(self, losses: list[Loss], modality: Optional[int] = None, target: Optional[str] = None, weight: float = 1) -> None:
-        super().__init__(losses, target, weight)
+    def __init__(self, losses: list[torch.nn.Module], modality: Optional[int] = None, target: Optional[str] = None, weight: float = 1) -> None:
+        super().__init__(target=target, weight=weight)
+        self.losses = torch.nn.ModuleList(losses)
         self.modality = modality
         
         # check modality targeted
@@ -47,3 +49,9 @@ class MAGLoss(MultiLosses):
         """
         x = input[:, modality, ...]
         return self.losses[modality](x, target) if self.modality is None else self.losses[0](x, target)
+
+    def reset(self) -> None:
+        for l in self.losses:
+            if isinstance(l, Loss):
+                l.reset()
+        return super().reset()

@@ -1,5 +1,5 @@
 from torchmanager_core import abc
-from torchmanager_core.typing import Any, Optional, Self, Sized, Union
+from torchmanager_core.typing import Any, Optional, Self, Sized
 from torch.utils.data import Dataset
 
 try:
@@ -100,16 +100,16 @@ class TargetedDataset(MultiDataset):
         - target: An `int` of target dataset index in `datasets` list
     """
 
-    __target: int
+    __target: Optional[int]
     __target_dict: dict[int, str]
 
     @property
-    def target(self) -> int:
+    def target(self) -> Optional[int]:
         return self.__target
 
     @target.setter
-    def target(self, t: int) -> None:
-        if (abs(t) >= len(self.datasets)) and t != 0:
+    def target(self, t: Optional[int]) -> None:
+        if t is not None and (abs(t) >= len(self.datasets)) and t != 0:
             raise IndexError(f"Target {t} out of datasets range ({len(self.datasets)}).")
         self.__target = t
 
@@ -130,10 +130,13 @@ class TargetedDataset(MultiDataset):
         self.__target_dict = target_dict
 
     def __getitem__(self, index: Any) -> Any:
-        return self.datasets[self.target][index]
+        if self.target is not None:
+            return self.datasets[self.target][index]
+        else:
+            raise NotImplementedError("Returns data from all targets is not supported for `data.TargetingDataset`, use original `Dataset` class instead.")
 
     def __len__(self) -> int:
-        d = self.datasets[self.target]
+        d = self.datasets[self.target] if self.target is not None else self.datasets
         if not isinstance(d, Sized):
             raise TypeError(f"Dataset with target index {self.target} does not perform to Sized protocol")
         return len(d)
@@ -158,11 +161,11 @@ class TargetedDataLoader(DataLoader):  # type: ignore
         return len(self.dataset.datasets)
 
     @property
-    def target(self) -> int:
+    def target(self) -> Optional[int]:
         return self.dataset.target
 
     @target.setter
-    def target(self, t: int) -> None:
+    def target(self, t: Optional[int]) -> None:
         self.dataset.target = t
 
     @property

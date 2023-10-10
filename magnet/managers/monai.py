@@ -3,13 +3,20 @@ from monai.inferers.utils import sliding_window_inference
 from torchmanager.data import DataLoader, Dataset
 from torchmanager_core import devices, torch, view
 from torchmanager_core.typing import Any, Callable, Module, Optional, Sequence, Union
-from torchmanager_monai import Manager as _Manager
+from torchmanager_monai import Manager as _Manager, SegmentationManager as _SegManager
 from torchmanager_monai.protocols import SubResulting
 
 from .targeting import Manager as _TargetingManager
 
 
 class Manager(_Manager[Module], _TargetingManager[Module]):
+    def unpack_data(self, data: dict[str, Any]) -> tuple[Any, Any]:
+        if "targets" in data:
+            self.target = data["targets"]
+        return _Manager.unpack_data(self, data)
+
+
+class SegmentationManager(_SegManager[Module], _TargetingManager[Module]):
     """
     A `TargetingManager` with monai compatibility wrap
 
@@ -169,8 +176,9 @@ class Manager(_Manager[Module], _TargetingManager[Module]):
 
     def unpack_data(self, data: dict[str, Any]) -> tuple[Any, Union[dict[str, Any], Any]]:
         if self.return_dict:
-            image, label = _Manager.unpack_data(self, data)
+            image, label = _SegManager.unpack_data(self, data)
             label = {"out": label}
             return image, label
-        else:
-            return _Manager.unpack_data(self, data)
+        elif "targets" in data:
+            self.target = data["targets"]
+        return _SegManager.unpack_data(self, data)

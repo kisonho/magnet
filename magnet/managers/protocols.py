@@ -5,6 +5,7 @@ from torchmanager_core.typing import Optional, Protocol, Union, runtime_checkabl
 @runtime_checkable
 class Targeting(Protocol):
     """Targeting protocol"""
+    target_dict: dict[int, str]
 
     @property
     @abc.abstractmethod
@@ -21,7 +22,3 @@ class Targeting(Protocol):
     def target(self, t: Optional[Union[list[int], int]]) -> None:
         pass
 
-    @property
-    @abc.abstractmethod
-    def target_dict(self) -> dict[Optional[int], str]:
-        return NotImplemented

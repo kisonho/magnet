@@ -1,21 +1,20 @@
 [tool.poetry]
 name = "magms"
-version = "2.0"
-description = "Modality-Agnostic Learning for Medical Image Segmentation Using Multi-modality Self-distillation (v2.0)"
+version = "2.1b1"
+description = "Modality-Agnostic Learning for Medical Image Segmentation Using Multi-modality Self-distillation (v2.1b1)"
 authors = ["Qisheng He <Qisheng.He@wayne.edu>"]
 repository = "https://github.com/kisonho/magnet.git"
 
 [tool.poetry.dependencies]
-monai = "^0.9.0"
 python = "^3.9"
-torch = "^1.12.1"
-torchmanager = "^1.0.4"
+torch = "*"
+torchmanager = "^1.1"
+
+[tool.poetry.optional-dependencies]
+monai = {version = "^0.9.0", extras = ["torchmanager_monai"]}
 
 [[tool.poetry.packages]]
 include = "magnet"
-
-[[tool.poetry.packages]]
-include = "torchmanager_monai"
 
 [build-system]
 requires = ["poetry-core"]

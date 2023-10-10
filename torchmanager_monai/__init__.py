@@ -1,4 +1,4 @@
 import monai as core
 
 from . import metrics
-from .managers import Manager
+from .managers import Manager, SegmentationManager

@@ -1,2 +1,6 @@
 from .hemis import HeMIS
-from .unetr import UNETR, UNETRWithDictOutput, UNETRWithMultiModality
+
+try:
+    from .unetr import UNETR, UNETRWithDictOutput, UNETRWithMultiModality
+except ImportError:
+    UNETR = UNETRWithDictOutput = UNETRWithMultiModality = NotImplemented

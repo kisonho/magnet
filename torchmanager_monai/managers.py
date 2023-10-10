@@ -9,22 +9,20 @@ from .protocols import SubResulting
 
 
 class Manager(tm.Manager[Module], Generic[Module]):
-    """The training manager with monai compability"""
+    model: Module
 
+    def unpack_data(self, data: dict[str, Any]) -> tuple[Any, Any]:
+        image, label = data["image"], data["label"]
+        return image, label
+
+
+class SegmentationManager(Manager[Module], Generic[Module]):
+    """The training manager with monai compability"""
     _post_labels: Callable[[torch.Tensor], torch.Tensor]
     _post_predicts: Callable[[torch.Tensor], torch.Tensor]
     _roi_size: Sequence[int]
-    model: Module
 
     def __init__(self, *args: Any, post_labels: Callable[[torch.Tensor], torch.Tensor] = lambda x: x, post_predicts: Callable[[torch.Tensor], torch.Tensor] = lambda x: x, roi_size: Sequence[int] = (96, 96, 96), **kwargs: Any) -> None:
-        """
-        Constructor
-
-        - Parameters:
-            - post_labels: A `list` of post `Callable[[torch.Tensor], torch.Tensor]`s for labels
-            - post_predicts: A `list` of post `Callable[[torch.Tensor], torch.Tensor]`s for predictions
-            - roi_size: A `Sequence` of sliding window size in `int` during the testing
-        """
         super().__init__(*args, **kwargs)
         self._post_labels = post_labels
         self._post_predicts = post_predicts
@@ -122,7 +120,3 @@ class Manager(tm.Manager[Module], Generic[Module]):
                 runtime_error = RuntimeError(f"Cannot fetch metric '{name}'.")
                 raise runtime_error from metric_error
         return summary
-
-    def unpack_data(self, data: dict[str, Any]) -> tuple[torch.Tensor, torch.Tensor]:
-        image, label = data["image"], data["label"]
-        return image, label

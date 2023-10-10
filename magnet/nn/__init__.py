@@ -1,1 +1,2 @@
-from .shared import MAGNET, share_modules
+from . import fusion
+from .shared import MAGNET, MAGNET2, share_modules

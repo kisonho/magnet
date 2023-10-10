@@ -66,7 +66,7 @@ class Manager(_Manager[Module], _TargetingManager[Module]):
             x, _ = self.unpack_data(data)
             if use_multi_gpus is not True:
                 x = x.to(device)
-            val_outputs = sliding_window_inference(x, self._roi_size, 1, self.model)
+            val_outputs = sliding_window_inference(x, self._roi_size, 1, self.model, overlap=0.5)
             y: list[torch.Tensor] = decollate_batch(val_outputs)  # type: ignore
             y = [self._post_predicts[t](val_pred_tensor).unsqueeze(0) for val_pred_tensor in y]
             y_post = torch.cat(y)

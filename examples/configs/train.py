@@ -1,4 +1,5 @@
-import argparse, logging, os, torchmanager, warnings
+import argparse, os, torchmanager, warnings
+from torchmanager_core.view import logger, logging
 from typing import Optional, Union
 
 from .basic import Config as _Config
@@ -9,16 +10,12 @@ class Config(_Config):
     
     - Properties:
         - batch_size: An `int` of batch size
-        - data: A `str` of dataset directory
-        - device: A `torch.device` to be trained on
         - epochs: An `int` of total training epochs
         - experiment: A `str` of experiment name
-        - experiment_dir: A `str` of experiment directory
         - img_size: A tuple of the image size in `int`
-        - output_model: A `str` of output model path
-        - show_verbose: A `bool` flag of if showing training progress bar
+        - modality: An optional `int` or `list` of training modalities
+        - output_channels: An optional `int` of output channels
         - training_split: An `int` of the split number of validation dataset during training
-        - use_multi_gpus: A `bool` flag of if using multi GPUs
     """
     batch_size: int
     epochs: int
@@ -70,29 +67,39 @@ class Config(_Config):
         self.training_split = training_split
         self.out_channels = out_channels
 
-        # initialize log
+        # initialize log path
         os.makedirs(self.experiment_dir, exist_ok=True)
         log_file = os.path.basename(self.experiment.replace(".exp", ".log"))
         log_path = os.path.join(self.experiment_dir, log_file)
-        logging.basicConfig(level=logging.INFO, filename=log_path, format="%(message)s")
+
+        # initialize logger
+        logging.getLogger().handlers.clear()
+        formatter = logging.Formatter("%(message)s")
+        logger.setLevel(logging.INFO)
+
+        # initilaize file handler
+        file_handler = logging.FileHandler(log_path)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
         warnings.filterwarnings("ignore")
+
+        # initialize console handler
         if self.show_verbose:
-            console = logging.StreamHandler()
-            console.setLevel(logging.INFO)
-            formatter = logging.Formatter('%(message)s')
-            console.setFormatter(formatter)
-            logging.getLogger().addHandler(console)
+            console_handler = logging.StreamHandler()
+            console_handler.setLevel(logging.INFO)
+            console_handler.setFormatter(formatter)
+            logger.addHandler(console_handler)
 
         # assert properties
-        assert torchmanager.version >= "1.0.4", f"Version v1.0.4+ is required for torchmanager, got {torchmanager.version}."
+        assert torchmanager.version >= "1.1.0", f"Version v1.1.0+ is required for torchmanager, got {torchmanager.version}."
         assert self.batch_size > 0, f"Batch size must be positive, got {self.batch_size}."
         assert self.epochs > 0, f"Epochs must be positive, got {self.epochs}."
         for s in self.img_size: assert s > 0, f"Image size must be positive numbers, got {self.img_size}."
 
     def _show_settings(self) -> None:
-        logging.info(f"Experiment {self.experiment}: pretrained_model={self.pretrained_model}, output_model_path={self.output_model}")
-        logging.info(f"Dataset: path={self.data}, modality={self.modality}")
-        logging.info(f"Training settings: epochs={self.epochs}, batch_size={self.batch_size}, img_size={self.img_size}")
+        logger.info(f"Experiment {self.experiment}: pretrained_model={self.pretrained_model}, output_model_path={self.output_model}")
+        logger.info(f"Dataset: path={self.data}, modality={self.modality}")
+        logger.info(f"Training settings: epochs={self.epochs}, batch_size={self.batch_size}, img_size={self.img_size}")
 
     @staticmethod
     def get_parser(parser: argparse.ArgumentParser = argparse.ArgumentParser()) -> argparse.ArgumentParser:        

@@ -1,6 +1,6 @@
 import torchmanager as tm
 from torchmanager.data import Dataset, DataLoader
-from torchmanager.train import LrScheduleFreq as Frequency
+from torchmanager.callbacks import Frequency
 from torchmanager_core import torch
 from torchmanager_core.typing import Any, Module, Optional, Union
 
@@ -12,6 +12,7 @@ class Manager(tm.Manager[Module]):
     A training manager that trains with multiple mixed dataset
 
     * extends: `tm.Manager`
+    * Compatibility: The `backward` method in this class that clips gradients will only be available in torchmanager with version higher than 1.2
 
     - Properties:
         - target: An `int` of targeted modality index
@@ -55,7 +56,7 @@ class Manager(tm.Manager[Module]):
             - target_freq: The update training `Frequency`
         """
         super().__init__(model, optimizer, loss_fn, metrics)
-        self.__target = 0
+        self.__target = None
         self.__freq = target_freq
 
     def _train(self, dataset: Union[DataLoader[Any], Dataset[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:

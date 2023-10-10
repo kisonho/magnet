@@ -35,5 +35,15 @@ class MAGLoss(MultiLosses):
         return loss
 
     def forward_target(self, input: torch.Tensor, target: Any, modality: int) -> torch.Tensor:
+        """
+        Forward the target modality loss
+
+        - Parameters:
+            - input: A `torch.Tensor` of the predictions
+            - target: `Any` type of labels
+            - modality: An `int` of the modality index
+        - Returns:
+            The loss scalar in `torch.Tensor` for the target modality
+        """
         x = input[:, modality, ...]
         return self.losses[modality](x, target) if self.modality is None else self.losses[0](x, target)

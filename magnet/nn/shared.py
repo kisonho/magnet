@@ -1,5 +1,7 @@
 from torchmanager_core import torch
-from torchmanager_core.typing import Any, Generic, Module, Optional, Union
+from torchmanager_core.typing import Any, Generic, Module, NamedTuple, Optional, Union
+
+from .fusion import Fusion
 
 
 class MAGNET(torch.nn.Module, Generic[Module]):
@@ -87,6 +89,97 @@ class MAGNET(torch.nn.Module, Generic[Module]):
             return {name: torch.cat([v.sum(dim=1).unsqueeze(1), v[:, self.target, ...].unsqueeze(1)], dim=1) for name, v in y.items()}
         else:
             return y
+
+
+class FeaturedData(NamedTuple):
+    features: Any
+    out: Any
+
+
+class MAGNET2(MAGNET[Module]):
+    """
+    Modules that shared same architecture
+
+    * extends: `magnet.MAGNET`
+
+    - Parameters:
+        - encodrs: A `torch.nn.ModuleList` of modality specific encoders
+        - fusion: An optional `Fusion` model to fuse the target modalities
+        - decoder: An optional `Decoder` model for the shared decoder
+    """
+    fusion: Optional[Fusion]
+    decoder: Optional[torch.nn.Module]
+    return_features: bool
+
+    @property
+    def num_targets(self) -> int:
+        return len(self.target_modules)
+
+    @property
+    def encoders(self) -> torch.nn.ModuleList:
+        return self.target_modules
+
+    def __init__(self, *encoders: Module, fusion: Optional[Fusion] = None, decoder: Optional[torch.nn.Module] = None, return_features: bool = True, target_dict: dict[int, str] = {}) -> None:
+        """
+        Constructor
+
+        - Parameters:
+            - *encoders: Target `Module` encoders
+            - fusion: An optional `Fusion` module to fuse the target modalities
+            - decoder: An optional `torch.nn.Module` module for the shared decoder
+            - return_features: A `bool` flag of if returning features during training
+            - target_dict: A `dict` of available target index as key in `int` and name of target as value in `str`
+        """
+        super().__init__(*encoders, target_dict=target_dict)
+        self.fusion = fusion
+        self.decoder = decoder
+        self.return_features = return_features
+
+    def forward(self, x_in: Union[dict[str, Any], torch.Tensor], *args: Any, **kwargs: Any) -> Any:
+        # unpack inputs
+        if isinstance(x_in, dict):
+            x = x_in['image']
+            assert isinstance(x, torch.Tensor), "Input image is not a valid `torch.Tensor`."
+            target: Optional[list[int]] = x_in['targets'] if 'targets' in x_in else None
+            self.target = target
+        else:
+            x = x_in
+
+        # forward encoders and fuse
+        x = super().forward(x, *args, **kwargs)
+
+        # check input modalities
+        if self.target is None or isinstance(self.target, list):
+            y_targets: list[torch.Tensor] = []
+
+            # loop for each modality
+            for x_target in x:
+                y_target: torch.Tensor = x_target if self.decoder is None else self.decoder(x_target)
+                y_targets.append(y_target.unsqueeze(1))
+            y = torch.cat(y_targets, dim=1)
+        else:
+            y_target: torch.Tensor = x if self.decoder is None else self.decoder(x)
+            assert isinstance(y_target, torch.Tensor), "The output from the decoder must be a valid `torch.Tensor`."
+            y = y_target.unsqueeze(1)
+
+        # decision level fusion if not fused
+        if not self.training:
+            y = y.sum(1)
+
+        # return formatted outputs
+        if self.training and self.return_features:
+            out = FeaturedData(x, y)
+        else:
+            out = y
+        return out
+
+    def fuse(self, preds: list[Any]) -> Any:
+        if self.fusion is not None:
+            return self.fusion(preds)
+        elif isinstance(preds[0], tuple):
+            return preds
+        else:
+            return super().fuse(preds)
 
 
 def share_modules(models: list[Module], shared_modules: dict[str, torch.nn.Module], target_dict: dict[int, str] = {}) -> MAGNET[Module]:

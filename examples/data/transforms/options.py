@@ -4,16 +4,19 @@ from monai import transforms
 from monai.transforms.compose import Compose
 from typing import Any, NamedTuple, Optional, Union
 
-from .general import ConvertLabel, CropStructure, NormToOne, SetModality
+from .general import ConvertLabel, CropStructure, NormToOne
+from .modality import CopyModality, SetModality
 
 class TransformOptions(NamedTuple):
     load_imaged: bool = True
     """must be `True`"""
-    add_channeld: bool = False
+    add_channeld: Optional[list[str]] = None
+    as_channel_firstd: Optional[list[str]] = None
     center_spatial_cropd: Optional[Union[tuple[int, int, int], int]] = None
     convert_label: bool = False
     spacingd: Optional[tuple[tuple[int, ...], str]] = None
     """`tuple`[pixdim (`tuple`), mode (`int`)]"""
+    copy_modality: Optional[tuple[int, bool]] = None
     set_modality: Optional[Union[int, list[int]]] = None
     normalize_intensityd: bool = False
     norm_to_one: bool = False
@@ -54,7 +57,10 @@ def load_transforms(transform_options: TransformOptions, img_size: tuple[int, ..
         training_transforms.append(transforms.LoadImaged(keys))
 
     if transform_options.add_channeld:
-        training_transforms.append(transforms.AddChannelD(keys))
+        training_transforms.append(transforms.AddChannelD(transform_options.add_channeld))
+
+    if transform_options.as_channel_firstd:
+        training_transforms.append(transforms.AsChannelFirstd(transform_options.as_channel_firstd))
 
     if transform_options.center_spatial_cropd is not None:
         training_transforms.append(transforms.CenterSpatialCropd(keys, transform_options.center_spatial_cropd))
@@ -68,6 +74,10 @@ def load_transforms(transform_options: TransformOptions, img_size: tuple[int, ..
 
     if transform_options.orientationd:
         training_transforms.append(transforms.Orientationd(keys=keys, axcodes="RAS"))
+
+    if transform_options.copy_modality is not None:
+        mode, copy_modality = transform_options.copy_modality
+        training_transforms.append(CopyModality(mode=mode, key=keys[0], copy_modality=copy_modality))
 
     if transform_options.set_modality is not None:
         training_transforms.append(SetModality(mode=transform_options.set_modality, key=keys[0]))
@@ -87,8 +97,7 @@ def load_transforms(transform_options: TransformOptions, img_size: tuple[int, ..
         training_transforms.append(transforms.RandCropByPosNegLabeld(keys=keys, image_key='image', label_key='label', neg=0, spatial_size=img_size, num_samples=4))
 
     if transform_options.rand_flipd:
-        for i in range(3):
-            training_transforms.append(transforms.RandFlipd(keys=keys, spatial_axis=[i], prob=0.50))
+        training_transforms.append(transforms.RandFlipd(keys=keys, spatial_axis=[i for i in range(3)], prob=0.50))
 
     if transform_options.rand_rotate_90d:
         training_transforms.append(transforms.RandRotate90d(keys=keys, prob=0.1, max_k=3))

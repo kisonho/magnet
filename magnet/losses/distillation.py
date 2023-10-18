@@ -1,5 +1,5 @@
 from torchmanager.losses import KLDiv, Loss
-from torchmanager_core import torch, view, _raise
+from torchmanager_core import torch, _raise
 from torchmanager_core.typing import Any, Iterable, Optional, Union
 
 from .protocols import FeaturedData

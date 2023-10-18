@@ -1,7 +1,8 @@
 import numpy as np
-from torchmanager_core import torch
+from torchmanager_core import torch, deprecated
 
 
+@deprecated("v2.1", "v2.3")
 class HeMISFuse(torch.nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x_mean = x.mean(dim=1)
@@ -9,6 +10,7 @@ class HeMISFuse(torch.nn.Module):
         return torch.cat([x_mean, x_var], dim=1)
 
 
+@deprecated("v2.1", "v2.3")
 class HeMIS(torch.nn.Module):
     decoder: torch.nn.Sequential
     encoders: torch.nn.ModuleList

@@ -22,17 +22,17 @@ class UNetDecoder(torch.nn.Module):
             # upsampling = torch.nn.Upsample(scale_factor=2, mode='trilinear', align_corners=True)
             c1 = torch.nn.Sequential(
                 torch.nn.ConvTranspose3d(basic_dims * mults, int(basic_dims * mults / 2), kernel_size=3, padding=1, output_padding=1, stride=2),
-                torch.nn.InstanceNorm3d(basic_dims),
+                torch.nn.InstanceNorm3d(int(basic_dims * mults / 2)),
                 torch.nn.LeakyReLU(negative_slope=0.2),
             )
             c2 = torch.nn.Sequential(
                 torch.nn.ConvTranspose3d(basic_dims * mults, int(basic_dims * mults / 2), kernel_size=3, padding=1),
-                torch.nn.InstanceNorm3d(basic_dims),
+                torch.nn.InstanceNorm3d(int(basic_dims * mults / 2)),
                 torch.nn.LeakyReLU(negative_slope=0.2),
             )
             c3 = torch.nn.Sequential(
                 torch.nn.ConvTranspose3d(int(basic_dims * mults / 2), int(basic_dims * mults / 2), kernel_size=3, padding=1),
-                torch.nn.InstanceNorm3d(basic_dims),
+                torch.nn.InstanceNorm3d(int(basic_dims * mults / 2)),
                 torch.nn.LeakyReLU(negative_slope=0.2),
             )
             self.blocks.append(torch.nn.ModuleList([c1, c2, c3]))

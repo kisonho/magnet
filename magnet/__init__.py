@@ -7,4 +7,4 @@ try:
 except ImportError:
     build = build_v1 = build_v2 = build_v2_unet = NotImplemented
 
-VERSION = "2.1b1"
+VERSION = "2.1b2"

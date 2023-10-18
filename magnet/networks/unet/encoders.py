@@ -28,17 +28,17 @@ class UNetEncoder(torch.nn.Module):
             # build encoder level: c1 -> c2 -> c3
             c1 = torch.nn.Sequential(
                 torch.nn.Conv3d(in_channels, basic_dims * mults, kernel_size=3, padding=1, stride=2 if i > 0 else 1),
-                torch.nn.InstanceNorm3d(basic_dims),
+                torch.nn.InstanceNorm3d(basic_dims * mults),
                 torch.nn.LeakyReLU(negative_slope=0.2),
             )
             c2 = torch.nn.Sequential(
                 torch.nn.Conv3d(basic_dims * mults, basic_dims * mults, kernel_size=3, padding=1),
-                torch.nn.InstanceNorm3d(basic_dims),
+                torch.nn.InstanceNorm3d(basic_dims * mults),
                 torch.nn.LeakyReLU(negative_slope=0.2),
             )
             c3 = torch.nn.Sequential(
                 torch.nn.Conv3d(basic_dims * mults, basic_dims * mults, kernel_size=3, padding=1),
-                torch.nn.InstanceNorm3d(basic_dims),
+                torch.nn.InstanceNorm3d(basic_dims * mults),
                 torch.nn.LeakyReLU(negative_slope=0.2),
             )
 

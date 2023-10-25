@@ -13,13 +13,13 @@ For **[MAGNET: A Modality-Agnostic Networks for Medical Image Segmentation](http
 
 ## Get Started
 1. Load datasets
-```
+```python
 training_dataset = ...
 validation_dataset = ...
 ```
 
 2. Simpy build the MAGNET (UNETR backbone) with `magnet.build` function
-```
+```python
 num_modalities: int = ...
 num_classes: int = ...
 img_size: Union[int, Sequence[int]] = ...
@@ -27,7 +27,7 @@ model = magnet.build(num_modalities, num_classes, img_size, target_dict=target_d
 ```
 
 3. Or use the deeper `magnet.nn` framework to customize MAGNET backbone
-```
+```python
 encoder1: torch.nn.Module = ...
 encoder2: torch.nn.Module = ...
 fusion: torch.nn.Module = ...
@@ -36,7 +36,7 @@ model = magnet.nn.Magnet2(encoder1, encoder2, fusion=fusion, decoder=decoder)
 ```
 
 4. Define MAGMS loss function
-```
+```python
 main_loss_fn: list[Callable[[Any, Any], torch.Tensor]] = ...
 kldiv_loss_fn: list[Callable[[Any, Any], torch.Tensor]] = ...
 mse_loss_fn: list[Callable[[Any, Any], torch.Tensor]] = ...
@@ -46,7 +46,7 @@ loss_fn = feature_distillation_loss_fn
 ```
 
 5. Compile manager and train/test
-```
+```python
 optimizer = ...
 metric_fns = ...
 
@@ -62,9 +62,19 @@ print(summary)
 ## Monai Support
 * Using `magnet.MonaigManager` instead of `Manager` 
 * Post processing support with `post_labels` and `post_predicts`
-```
+```python
 post_labels = [...]
 post_predicts = [...]
 
 manager = magnet.MonaigManager(model, post_labels=post_labels, post_predicts=post_predicts, optimizer=optimizer, loss_fn=loss_fn, metric_fns=metric_fns)
+```
+
+## Cite this work
+```bibtex
+@article{he2023modality,
+  title={Modality-Agnostic Learning for Medical Image Segmentation Using Multi-modality Self-distillation},
+  author={He, Qisheng and Summerfield, Nicholas and Dong, Ming and Glide-Hurst, Carri},
+  journal={arXiv preprint arXiv:2306.03730},
+  year={2023}
+}
 ```

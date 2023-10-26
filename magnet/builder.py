@@ -98,7 +98,7 @@ def build_v2(in_channels: int, num_classes: int, img_size: Union[Sequence[int], 
     return MAGNET2(*encoders, fusion=fusion, decoder=decoder, return_features=return_features, target_dict=target_dict)
 
 
-def build_v2_unet(in_channels: int, num_classes: int, target_dict: dict[int, str], copy_encoder: bool = False, return_features: bool = False) -> MAGNET2[UNetEncoder]:
+def build_v2_unet(in_channels: int, num_classes: int, target_dict: dict[int, str], copy_encoder: bool = False, return_features: bool = True) -> MAGNET2[UNetEncoder]:
     """
     Function to load a MAGNET v2 with 3D UNet backbone
 

@@ -3,7 +3,7 @@ This is the official implementation of **[MAGMS](https://arxiv.org/pdf/2306.0373
 
 For **[MAGNET: A Modality-Agnostic Networks for Medical Image Segmentation](https://ieeexplore.ieee.org/document/10230587)**, please check to branch [stable-1.1](https://github.com/kisonho/magnet/tree/stable-1.1).
 
-![](res/structure_v2.jpg)
+![](res/structure.png)
 
 ## Pre-request
 * Python >= 3.9

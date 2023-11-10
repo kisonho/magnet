@@ -154,21 +154,23 @@ class MAGMSLoss(MAGLoss):
     """
     distillation_losses: torch.nn.ModuleList
     features_dtype: torch.dtype
-    features_losses: torch.nn.ModuleList
+    features_losses: Optional[torch.nn.ModuleList]
     modality: Optional[int]
     normalize_features: bool
 
-    def __init__(self, losses: list[torch.nn.Module], distillation_loss: list[torch.nn.Module], feature_losses: list[torch.nn.Module], features_dtype: torch.dtype = torch.float32, modality: Optional[int] = None, normalize_features: bool = False, target: Optional[str] = None, weight: float = 1) -> None:
+    def __init__(self, losses: list[torch.nn.Module], distillation_loss: list[torch.nn.Module], feature_losses: Optional[list[torch.nn.Module]] = None, *, features_dtype: torch.dtype = torch.float32, modality: Optional[int] = None, normalize_features: bool = False, target: Optional[str] = None, weight: float = 1) -> None:
         super().__init__(losses, modality=modality, target=target, weight=weight)
         self.distillation_losses = torch.nn.ModuleList(distillation_loss)
         self.features_dtype =features_dtype
-        self.features_losses = torch.nn.ModuleList(feature_losses)
+        self.features_losses = torch.nn.ModuleList(feature_losses) if feature_losses is not None else None
         self.modality = modality
         self.normalize_features = normalize_features
 
     def forward(self, input: Union[FeaturedData, torch.Tensor], target: Any) -> torch.Tensor:
         if isinstance(input, torch.Tensor):
             return super().forward(input, target)
+        elif self.features_losses is None:
+            return super().forward(input.out, target)
         else:
             loss = super().forward(input.out, target)
             loss += self.forward_features(input.features, input.out.shape[0])
@@ -235,7 +237,8 @@ class MAGMSLoss(MAGLoss):
                 fn.reset()
 
         # reset feature losses
-        for fn in self.features_losses:
-            if isinstance(fn, Loss):
-                fn.reset()
+        if self.features_losses is not None:
+            for fn in self.features_losses:
+                if isinstance(fn, Loss):
+                    fn.reset()
         super().reset()

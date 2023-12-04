@@ -71,15 +71,14 @@ if __name__ == "__main__":
         param.register_hook(gradients_hook_fn)
 
     # initialize losses
-    dice_losses: list[torch.nn.Module] = [losses.Loss(DiceCELoss(to_onehot_y=True, softmax=True)) for _ in range(in_channels + 1)]
-    kldiv_losses: list[torch.nn.Module] = [losses.PixelWiseKLDiv(softmax_temperature=config.temperature, weight=config.distillation_lambda) for _ in range(in_channels)]
-    mse_losses: list[torch.nn.Module] = [losses.Loss(torch.nn.MSELoss(reduction='mean'), weight=config.distillation_gamma) for _ in range(in_channels)]
-    loss_fn = losses.MAGSelfDistillationLoss(dice_losses, kldiv_losses)
-    loss_fn = losses.MAGFeatureDistillationLoss(loss_fn, mse_losses, features_dtype=torch.double)
+    dice_losses = [losses.Loss(DiceCELoss(to_onehot_y=True, softmax=True)) for _ in range(in_channels + 1)]
+    kldiv_losses: list[losses.Loss] = [losses.PixelWiseKLDiv(softmax_temperature=config.temperature, weight=config.distillation_lambda) for _ in range(in_channels)]
+    mse_losses = [losses.Loss(torch.nn.MSELoss(reduction='mean'), weight=config.distillation_gamma) for _ in range(in_channels)]
+    loss_fn = losses.MAGMSLoss(dice_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)  # type: ignore
 
     # metrics
     dice_fn = metrics.CumulativeIterationMetric(DiceMetric(include_background=True, reduction="none", get_not_nans=False))
-    
+
     ## Metrics WITH self distillation
     metric_fns: dict[str, metrics.Metric] = {"val_dice": dice_fn}
     post_labels = [data.transforms.AsDiscrete(to_onehot=num_classes) for _ in range(in_channels)]

@@ -1,10 +1,9 @@
 import copy
-from torchmanager_core.typing import Sequence, Union
+from typing import Union, Sequence
 
-from .nn import MAGNET, MAGNET2, share_modules
-from .nn.fusion import MidFusion
-from .networks.unet import UNetDecoder, UNetEncoderWithFuseConv as UNetEncoder
-from .networks.unetr import UNETR, UNETRDecoder, UNETREncoderWithFusionConv as UNETREncoder
+from magnet.nn import MAGNET, MAGNET2, share_modules
+from magnet.nn.fusion import MeanFusion
+from magnet.networks.unetr import UNETR, UNETRDecoder, UNETREncoderWithFusionConv as UNETREncoder
 
 
 def build_v1(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int], target_dict: dict[int, str], copy_modality: bool = False) -> MAGNET[UNETR]:
@@ -52,7 +51,7 @@ def build_v1(in_channels: int, num_classes: int, img_size: Union[Sequence[int], 
     return magnet
 
 
-def build_v2(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int], target_dict: dict[int, str], copy_encoder: bool = False, return_features: bool = True) -> MAGNET2[UNETREncoder]:
+def build_v2(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int], target_dict: dict[int, str], copy_encoder: bool = False, return_features: bool = True) -> MAGNET2[UNETREncoder, MeanFusion, UNETRDecoder]:
     """
     Function to load a MAGNET v2 with UNETR backbone
 
@@ -89,52 +88,10 @@ def build_v2(in_channels: int, num_classes: int, img_size: Union[Sequence[int], 
         encoders.append(e)
 
     # initialize fusion
-    fusion = MidFusion()
+    fusion = MeanFusion()
 
     # initialize decoder
     decoder = UNETRDecoder(768, num_classes, feature_size=16, norm_name="instance", res_block=True)
 
     # initialize magnet
     return MAGNET2(*encoders, fusion=fusion, decoder=decoder, return_features=return_features, target_dict=target_dict)
-
-
-def build_v2_unet(in_channels: int, num_classes: int, target_dict: dict[int, str], copy_encoder: bool = False, return_features: bool = True) -> MAGNET2[UNetEncoder]:
-    """
-    Function to load a MAGNET v2 with 3D UNet backbone
-
-    - Parameters:
-        - in_channels: An `int` of input number of channels as modalities
-        - num_classes: An `int` of the number of output classes
-        - img_size: Either a `Sequence` of image size in `int` or an `int` of single image size
-        - target_dict: A `dict` of target index as key in `int` and name of target as value in `str`
-        - copy_encoder: A `bool` flag of if copying encoder to other modalities so that all encoders have the same initialized weights
-        - return_features: A `bool` flag of if returning features during training
-    - Returns: A `MAGNET` with `.networks.unetr.UNETRWithDictOutput` as its target modules
-    """
-    # initialize
-    if not in_channels > 0:
-        raise ValueError(f"The input channels must be a positive number, got {in_channels}.")
-    if not num_classes > 0:
-        raise ValueError(f"The number of classes must be a positive number, got {num_classes}.")
-    encoders: list[UNetEncoder] = []
-    encoder = UNetEncoder(1) if copy_encoder else None
-    
-    # initialize encoders
-    for _ in range(in_channels):
-        if encoder is not None:
-            e = copy.deepcopy(encoder)
-        else:
-            e = UNetEncoder(1)
-        encoders.append(e)
-
-    # initialize fusion
-    fusion = MidFusion()
-
-    # initialize decoder
-    decoder = UNetDecoder(num_classes)
-
-    # initialize magnet
-    return MAGNET2(*encoders, fusion=fusion, decoder=decoder, return_features=return_features, target_dict=target_dict)
-
-
-build = build_v2

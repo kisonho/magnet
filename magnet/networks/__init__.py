@@ -1,6 +1,11 @@
 from .hemis import HeMIS
 
 try:
-    from .unetr import UNETR, UNETRWithDictOutput, UNETRWithMultiModality
+    from . import unet
 except ImportError:
-    UNETR = UNETRWithDictOutput = UNETRWithMultiModality = NotImplemented
+    unet = NotImplemented
+
+try:
+    from . import unetr
+except ImportError:
+    unetr = NotImplemented

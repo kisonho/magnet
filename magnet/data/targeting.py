@@ -70,12 +70,17 @@ class EquivalentDataset(MultiDataset):
             assert length == len(d), "The given datasets must contain equivalent size."
 
     def __add__(self, other: Dataset[Any]) -> Self:
+        # check type
         if not isinstance(other, Sized):
             raise TypeError("The dataset does not confirm to `Sized` protocol given.")
+
+        # check length
         if len(self.datasets) > 0:
             if not isinstance(self.datasets[0], Sized):
                 raise TypeError("One of the dataset in current datasets does not confirm to `Sized` protocol.")
             assert len(self.datasets[0]) == len(other), "The given datasets must contain equivalent size with other datasets."
+
+        # append
         super().__add__(other)
         return self
 
@@ -94,6 +99,7 @@ class TargetedDataset(MultiDataset):
     A dataset for mixed targets of datasets
 
     * extends: `MultiDataset`
+    * implements: `managers.protocols.Targeting`
 
     - Properties:
         - datasets: A `list` of multiple datasets

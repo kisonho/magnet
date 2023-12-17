@@ -3,7 +3,7 @@ import torch
 
 class UNetDecoder(torch.nn.Module):
     """
-    The decoder for 3D UNet
+    The decoder for 3D UNet (Monai implementation)
 
     - Properties:
         - blocks: A `torch.nn.ModuleList` of 3D UNet decoder blocks
@@ -18,8 +18,7 @@ class UNetDecoder(torch.nn.Module):
 
         # loop for dimension multiplies
         for mults in dim_mults[::-1][:-1]:
-            # build decoder level: upsampling -> c1 -> c2 -> c3
-            # upsampling = torch.nn.Upsample(scale_factor=2, mode='trilinear', align_corners=True)
+            # build decoder level: c1 -> c2 -> c3
             c1 = torch.nn.Sequential(
                 torch.nn.ConvTranspose3d(basic_dims * mults, int(basic_dims * mults / 2), kernel_size=3, padding=1, output_padding=1, stride=2),
                 torch.nn.InstanceNorm3d(int(basic_dims * mults / 2)),

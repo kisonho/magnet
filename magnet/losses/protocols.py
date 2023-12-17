@@ -1,7 +1,4 @@
-from torchmanager_core import torch
-from torchmanager_core.typing import Iterable, Protocol
+from torchmanager_core import abc, torch
+from torchmanager_core.typing import Iterable, Optional, Protocol, Union
 
-
-class FeaturedData(Protocol):
-    features: list[Iterable[torch.Tensor]]
-    out: torch.Tensor
+from magnet.nn import FeaturedData

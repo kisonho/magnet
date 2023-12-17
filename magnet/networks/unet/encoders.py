@@ -18,7 +18,6 @@ class UNetEncoder(torch.nn.Module):
             - in_channels: An `int` of the input channel
             - basic_dims: An `int` of the basic dimension
             - dim_mults: A `list` of dimension multiplies based on the `basic_dims` in `int`
-            - with_fuse_conv: A `bool` flag of if add a 1x1x1 Conv3d layer at the end
         """
         super().__init__()
         self.blocks = torch.nn.ModuleList()

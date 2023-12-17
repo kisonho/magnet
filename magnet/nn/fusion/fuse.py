@@ -1,5 +1,5 @@
 from torchmanager_core import abc, torch
-from torchmanager_core.typing import Any
+from torchmanager_core.typing import Any, Optional
 
 
 class Fusion(torch.nn.Module, abc.ABC):
@@ -31,22 +31,29 @@ class Fusion(torch.nn.Module, abc.ABC):
         return NotImplemented
 
 
-class MidFusion(Fusion):
+class MeanFusion(Fusion):
     """
     Fusion at the middle for encoders with multiple outputs
     
     * extends: `Fusion`
     """
-    def forward(self, x_in: list[tuple[torch.Tensor, ...]]) -> list[tuple[torch.Tensor, ...]]:
+    def forward(self, x_in: list[Optional[tuple[torch.Tensor, ...]]]) -> list[tuple[torch.Tensor, ...]]:
         return super().forward(x_in)
     
-    def fuse(self, x_in: list[tuple[torch.Tensor, ...]]) -> tuple[torch.Tensor, ...]:
+    def fuse(self, x_in: list[Optional[tuple[torch.Tensor, ...]]]) -> tuple[torch.Tensor, ...]:
         # initialize
         assert len(x_in) > 0, "Fused inputs must have at least one target."
-        x_to_fuse: list[list[torch.Tensor]] = [[] for _ in x_in[0]]
+
+        # initialize x to fuse
+        num_features = next((len(x) for x in x_in if x is not None), 0)
+        x_to_fuse: list[list[torch.Tensor]] = [[] for _ in range(num_features)]
 
         # loop for each target
         for x in x_in:
+            # check if x is given
+            if x is None:
+                continue
+
             # loop each feature
             for i, f in enumerate(x):
                 x_to_fuse[i].append(f.unsqueeze(1))
@@ -56,7 +63,7 @@ class MidFusion(Fusion):
         return y
 
 
-class MidSingleFusion(Fusion):
+class MeanSingleFusion(Fusion):
     """
     Fusion at the middle for encoders with single output
     """
@@ -69,3 +76,7 @@ class MidSingleFusion(Fusion):
         x_to_fuse: list[torch.Tensor] = [x.unsqueeze(1) for x in x_in]
         y = torch.cat(x_to_fuse, dim=1).mean(1)
         return y
+
+
+MidFusion = MeanFusion
+MidSingleFusion = MeanSingleFusion

@@ -1,11 +1,19 @@
 from torchmanager.losses import Loss
 from torchmanager_core import torch, _raise
-from torchmanager_core.typing import Any, Optional
+from torchmanager_core.typing import Any, Optional, Union
 
 
 class MAGLoss(Loss):
-    losses: torch.nn.ModuleList
+    __losses: torch.nn.ModuleList
     modality: Optional[int]
+
+    @property
+    def losses(self) -> torch.nn.ModuleList:
+        return self.__losses
+    
+    @losses.setter
+    def losses(self, losses: Union[list[torch.nn.Module], torch.nn.ModuleList]) -> None:
+        self.__losses = torch.nn.ModuleList(losses) if isinstance(losses, list) else losses
 
     def __init__(self, losses: list[torch.nn.Module], modality: Optional[int] = None, target: Optional[str] = None, weight: float = 1) -> None:
         super().__init__(target=target, weight=weight)

@@ -10,7 +10,7 @@ class MAGLoss(Loss):
     @property
     def losses(self) -> torch.nn.ModuleList:
         return self.__losses
-    
+
     @losses.setter
     def losses(self, losses: Union[list[torch.nn.Module], torch.nn.ModuleList]) -> None:
         self.__losses = torch.nn.ModuleList(losses) if isinstance(losses, list) else losses

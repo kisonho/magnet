@@ -1,5 +1,5 @@
 from torchmanager_core import torch
-from torchmanager_core.typing import Any, Generic, Module, NamedTuple, Optional, Union, TypeVar
+from torchmanager_core.typing import Any, Generic, Module, NamedTuple, Optional, Union, TypeVar, overload
 
 from .fusion import Fusion
 
@@ -97,6 +97,14 @@ class MAGNET(torch.nn.Module, Generic[Module]):
             assert not isinstance(self.target, list), "Multiple targets are assigned but only one modality is given to the input."
             return self.target_modules[self.target](x_in, *args, **kwargs)
 
+    @overload
+    def fuse(self, preds: list[torch.Tensor]) -> torch.Tensor:
+        ...
+
+    @overload
+    def fuse(self, preds: list[dict[str, torch.Tensor]]) -> dict[str, torch.Tensor]:
+        ...
+
     def fuse(self, preds: list[Any]) -> Union[torch.Tensor, dict[str, torch.Tensor]]:
         # check predictions
         assert len(preds) > 0, "Results must contain at least one predictions"
@@ -170,7 +178,7 @@ class MAGNET2(MAGNET[E], Generic[E, F, D]):
         self.decoder = decoder
         self.return_features = return_features
 
-    def forward(self, x_in: Union[torch.Tensor, list[torch.Tensor], dict[str, Any]], *args: Any, **kwargs: Any) -> Any:
+    def forward(self, x_in: Union[torch.Tensor, list[torch.Tensor], dict[str, Any]], *args: Any, **kwargs: Any) -> Union[FeaturedData, Union[torch.Tensor, list[Optional[torch.Tensor]], tuple[Union[torch.Tensor, list[Optional[torch.Tensor]]], list[Any]]]]:
         # unpack inputs
         if isinstance(x_in, dict):
             x = x_in['image']

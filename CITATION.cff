@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this framework, please cite it as below."
+authors:
+- family-names: "He"
+  given-names: "Qisheng"
+- family-names: "Nicholas"
+  given-names: "Summerfield"
+- family-names: "Dong"
+  given-names: "Ming"
+- family-names: "Glide-Hurst"
+  given-names: "Carri"
+title: "Modality-Agnostic Learning for Medical Image Segmentation Using Multi-modality Self-distillation"
+date-released: 2023
+preferred-citation: 
+  type: "article"
+  message: "If you use this framework, please cite it as below."
+  authors:
+  - family-names: "He"
+    given-names: "Qisheng"
+  - family-names: "Nicholas"
+    given-names: "Summerfield"
+  - family-names: "Dong"
+    given-names: "Ming"
+  - family-names: "Glide-Hurst"
+    given-names: "Carri"
+  title: "Modality-Agnostic Learning for Medical Image Segmentation Using Multi-modality Self-distillation"
+  date-released: 2023
+  journal: "arXiv preprint arXiv:2306.03730"

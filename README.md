@@ -1,7 +1,9 @@
 # Modality-Agnostic Learning for Medical Image Segmentation Using Multi-modality Self-distillation
-This is the official implementation of **[MAGMS](https://arxiv.org/pdf/2306.03730)**.
+This is the official implementation of **[MAG-MS](https://arxiv.org/pdf/2306.03730)**.
 
-For **[MAGNET: A Modality-Agnostic Networks for Medical Image Segmentation](https://ieeexplore.ieee.org/document/10230587)**, please check to branch [stable-1.1](https://github.com/kisonho/magnet/tree/stable-1.1).
+For the official implementation of **[MAGNET: A Modality-Agnostic Networks for Medical Image Segmentation](https://ieeexplore.ieee.org/document/10230587)**, please check to branch [stable-1.1](https://github.com/kisonho/magnet/tree/stable-1.1).
+
+MAG-MS is designed to be compatible with MAGNET (v1). The new MAGNET (v2) used in MAG-MS is designed to support multi-modality self-distillation and multi-modality feature distillation.
 
 ![](res/structure_v2.jpg)
 
@@ -18,12 +20,12 @@ training_dataset = ...
 validation_dataset = ...
 ```
 
-2. Simpy build the MAGNET (UNETR backbone) with `magnet.build` function
+2. Simpy build the MAGNET (UNETR backbone) with `magnet.build` function, or use the `magnet.build_v2` (UNETR backbone)/`magnet.build_v2_unet` (3D UNet backbone) function for the new MAGNET used in MAG-MS
 ```python
 num_modalities: int = ...
 num_classes: int = ...
 img_size: Union[int, Sequence[int]] = ...
-model = magnet.build(num_modalities, num_classes, img_size, target_dict=target_dict)
+model = magnet.build_v2(num_modalities, num_classes, img_size, target_dict=target_dict)
 ```
 
 3. Or use the deeper `magnet.nn` framework to customize MAGNET backbone
@@ -32,7 +34,7 @@ encoder1: torch.nn.Module = ...
 encoder2: torch.nn.Module = ...
 fusion: torch.nn.Module = ...
 decoder: torch.nn.Module = ...
-model = magnet.nn.Magnet2(encoder1, encoder2, fusion=fusion, decoder=decoder)
+model = magnet.nn.MAGNET2(encoder1, encoder2, fusion=fusion, decoder=decoder)
 ```
 
 4. Define MAGMS loss function

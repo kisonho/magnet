@@ -13,6 +13,12 @@ MAG-MS is designed to be compatible with MAGNET (v1). The new MAGNET (v2) used i
 * [torchmanager](https://github.com/kisonho/torchmanager) >= 1.1
 * [Monai](https://monai.io) >= 1.1
 
+## Installation
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install MAG-MS.
+```bash
+pip install magms
+```
+
 ## Get Started
 1. Load datasets
 ```python

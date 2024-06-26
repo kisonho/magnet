@@ -1,6 +1,7 @@
 from torchmanager_core import abc
-from torchmanager_core.typing import Any, Optional, Self, Sized
+from torchmanager_core.typing import Any, Sized
 from torch.utils.data import Dataset
+from typing import Self
 
 try:
     from monai.data.dataloader import DataLoader
@@ -106,15 +107,15 @@ class TargetedDataset(MultiDataset):
         - target: An `int` of target dataset index in `datasets` list
     """
 
-    __target: Optional[int]
+    __target: int | None
     __target_dict: dict[int, str]
 
     @property
-    def target(self) -> Optional[int]:
+    def target(self) -> int | None:
         return self.__target
 
     @target.setter
-    def target(self, t: Optional[int]) -> None:
+    def target(self, t: int | None) -> None:
         if t is not None and (abs(t) >= len(self.datasets)) and t != 0:
             raise IndexError(f"Target {t} out of datasets range ({len(self.datasets)}).")
         self.__target = t
@@ -167,11 +168,11 @@ class TargetedDataLoader(DataLoader):  # type: ignore
         return len(self.dataset.datasets)
 
     @property
-    def target(self) -> Optional[int]:
+    def target(self) -> int | None:
         return self.dataset.target
 
     @target.setter
-    def target(self, t: Optional[int]) -> None:
+    def target(self, t: int | None) -> None:
         self.dataset.target = t
 
     @property

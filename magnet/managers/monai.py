@@ -2,7 +2,7 @@ from monai.data.utils import decollate_batch
 from monai.inferers.utils import sliding_window_inference
 from torchmanager.data import DataLoader, Dataset
 from torchmanager_core import devices, torch, view
-from torchmanager_core.typing import Any, Callable, Module, Optional, Sequence, Union
+from torchmanager_core.typing import Any, Callable, Module, Sequence
 from torchmanager_monai import Manager as _Manager, SegmentationManager as _SegManager
 from torchmanager_monai.protocols import SubResulting
 
@@ -45,7 +45,7 @@ class SegmentationManager(_SegManager[Module], _TargetingManager[Module]):
         self.return_dict = return_dict
 
     @torch.no_grad()
-    def predict(self, dataset: Union[DataLoader[Any], Dataset[Any]], device: Optional[Union[torch.device, list[torch.device]]] = None, use_multi_gpus: bool = False, show_verbose: bool = False) -> list[torch.Tensor]:
+    def predict(self, dataset: DataLoader[dict[str, Any]] | Dataset[dict[str, Any]], device: torch.device | list[torch.device] | None = None, use_multi_gpus: bool = False, show_verbose: bool = False) -> list[torch.Tensor]:
         # find available device
         cpu, device, target_devices = devices.search(None if use_multi_gpus else device)
         if device == cpu and len(target_devices) < 2:
@@ -70,6 +70,7 @@ class SegmentationManager(_SegManager[Module], _TargetingManager[Module]):
 
         # loop the dataset
         for data in dataset:
+            assert isinstance(data, dict), "The dataset must be a dictionary."
             x, _ = self.unpack_data(data)
             if use_multi_gpus is not True:
                 x = x.to(device)
@@ -88,7 +89,7 @@ class SegmentationManager(_SegManager[Module], _TargetingManager[Module]):
         return predictions
 
     @torch.no_grad()
-    def test(self, dataset: Union[DataLoader[Any], Dataset[Any], dict[str, Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def test(self, dataset: DataLoader[Any] | Dataset[Any] | dict[str, Any], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         # initialize
         summary: dict[str, float] = {}
 
@@ -174,7 +175,7 @@ class SegmentationManager(_SegManager[Module], _TargetingManager[Module]):
                 raise runtime_error from metric_error
         return summary
 
-    def unpack_data(self, data: dict[str, Any]) -> tuple[Any, Union[dict[str, Any], Any]]:
+    def unpack_data(self, data: dict[str, Any]) -> tuple[Any, dict[str, Any] | Any]:
         if self.return_dict:
             image, label = _SegManager.unpack_data(self, data)
             label = {"out": label}

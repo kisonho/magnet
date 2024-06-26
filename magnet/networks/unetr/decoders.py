@@ -9,8 +9,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
-
 import torch, torch.nn as nn
 
 from monai.networks.blocks.dynunet_block import UnetOutBlock
@@ -27,7 +25,7 @@ class UNETRDecoder(nn.Module):
         in_channels: int,
         out_channels: int,
         feature_size: int = 16,
-        norm_name: Union[tuple, str] = "instance",
+        norm_name: tuple | str = "instance",
         res_block: bool = True,
         spatial_dims: int = 3,
     ) -> None:

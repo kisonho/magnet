@@ -2,7 +2,7 @@ import torchmanager as tm
 from torchmanager.data import Dataset, DataLoader
 from torchmanager.callbacks import Frequency
 from torchmanager_core import torch
-from torchmanager_core.typing import Any, Collection, Module, Optional, Union
+from torchmanager_core.typing import Any, Collection, Module
 
 from .protocols import Targeting
 
@@ -20,22 +20,22 @@ class Manager(tm.Manager[Module]):
         - target_dict: A `dict` of available targets with the indices in `int` as keys and the names in `str` as values
     """
 
-    __freq: Optional[Frequency]
-    __target: Optional[Union[list[int], int]]
+    __freq: Frequency | None
+    __target: list[int] | int | None
 
     @property
-    def target(self) -> Optional[Union[list[int], int]]:
+    def target(self) -> list[int] | int | None:
         """The targeted modality index"""
         return self.__target
 
     @target.setter
-    def target(self, t: Optional[Union[list[int], int]]) -> None:
+    def target(self, t: list[int] | int | None) -> None:
         self.__target = t
         if isinstance(self.raw_model, Targeting):
             self.raw_model.target = t
 
     @property
-    def target_freq(self) -> Optional[Frequency]:
+    def target_freq(self) -> Frequency | None:
         """The target training frequency"""
         return self.__freq
 
@@ -51,7 +51,7 @@ class Manager(tm.Manager[Module]):
         if isinstance(self.raw_model, Targeting):
             self.raw_model.target_dict = target_dict
 
-    def __init__(self, model: Module, optimizer: Optional[torch.optim.Optimizer] = None, loss_fn: Optional[Union[tm.losses.Loss, dict[str, tm.losses.Loss]]] = None, metrics: dict[str, tm.metrics.Metric] = {}, target_freq: Optional[Frequency] = None) -> None:
+    def __init__(self, model: Module, optimizer: torch.optim.Optimizer | None = None, loss_fn: tm.losses.Loss | dict[str, tm.losses.Loss] | None = None, metrics: dict[str, tm.metrics.Metric] = {}, target_freq: Frequency | None = None) -> None:
         """
         Constructor
 
@@ -62,7 +62,7 @@ class Manager(tm.Manager[Module]):
         self.__target = None
         self.__freq = target_freq
 
-    def _train(self, dataset: Union[DataLoader[Any], Dataset[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def _train(self, dataset: DataLoader[Any] | Dataset[Any], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         """
         The single training step for an epoch
 
@@ -110,7 +110,7 @@ class Manager(tm.Manager[Module]):
             return super()._train(dataset, show_verbose=show_verbose, **kwargs)
 
     @torch.no_grad()
-    def test(self, dataset: Union[DataLoader[Any], Dataset[Any], Collection[Any], dict[Optional[int], Union[DataLoader[Any], Dataset[Any], Collection[Any]]]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
+    def test(self, dataset: DataLoader[Any] | Dataset[Any] | Collection[Any] | dict[int | None, DataLoader[Any] | Dataset[Any] | Collection[Any]], show_verbose: bool = False, **kwargs: Any) -> dict[str, float]:
         # initialize
         summary: dict[str, float] = {}
 

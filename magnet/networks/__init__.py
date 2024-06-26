@@ -1,5 +1,3 @@
-from .hemis import HeMIS
-
 try:
     from . import unet
 except ImportError:

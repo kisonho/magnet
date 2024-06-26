@@ -1,5 +1,5 @@
 from torchmanager_core import abc
-from torchmanager_core.typing import Optional, Protocol, Union, runtime_checkable
+from torchmanager_core.typing import Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -14,11 +14,11 @@ class Targeting(Protocol):
 
     @property
     @abc.abstractmethod
-    def target(self) -> Optional[Union[list[int], int]]:
+    def target(self) -> list[int] | int | None:
         return NotImplemented
 
     @target.setter
     @abc.abstractmethod
-    def target(self, t: Optional[Union[list[int], int]]) -> None:
+    def target(self, t: list[int] | int | None) -> None:
         pass
 

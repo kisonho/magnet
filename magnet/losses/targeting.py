@@ -1,21 +1,21 @@
 from torchmanager.losses import Loss
 from torchmanager_core import torch, _raise
-from torchmanager_core.typing import Any, Optional, Union
+from torchmanager_core.typing import Any
 
 
 class MAGLoss(Loss):
     __losses: torch.nn.ModuleList
-    modality: Optional[int]
+    modality: int | None
 
     @property
     def losses(self) -> torch.nn.ModuleList:
         return self.__losses
 
     @losses.setter
-    def losses(self, losses: Union[list[torch.nn.Module], torch.nn.ModuleList]) -> None:
+    def losses(self, losses: list[torch.nn.Module] | torch.nn.ModuleList) -> None:
         self.__losses = torch.nn.ModuleList(losses) if isinstance(losses, list) else losses
 
-    def __init__(self, losses: list[torch.nn.Module], modality: Optional[int] = None, target: Optional[str] = None, weight: float = 1) -> None:
+    def __init__(self, losses: list[Loss], modality: int | None = None, target: str | None = None, weight: float = 1) -> None:
         super().__init__(target=target, weight=weight)
         self.losses = torch.nn.ModuleList(losses)
         self.modality = modality
@@ -24,7 +24,7 @@ class MAGLoss(Loss):
         if self.modality is not None:
             assert len(self.losses) == 1, "Only one loss function needed when modality is targeted."
 
-    def forward(self, input: Union[list[Optional[torch.Tensor]], torch.Tensor], target: torch.Tensor) -> torch.Tensor:
+    def forward(self, input: list[torch.Tensor | None] | torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         # switch mode
         if self.training and self.modality is None:
             # initialize

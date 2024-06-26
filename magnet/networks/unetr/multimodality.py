@@ -1,7 +1,7 @@
 from monai.networks.nets.unetr import UNETR
 from torchmanager_core import torch
 from torchmanager_core.view import warnings
-from torchmanager_core.typing import Optional, Union, Sequence
+from torchmanager_core.typing import Sequence
 
 
 class UNETRWithMultiModality(UNETR):
@@ -15,14 +15,14 @@ class UNETRWithMultiModality(UNETR):
         - num_targets: The total number of ta
     """
 
-    copy_modality: Optional[bool]
+    copy_modality: bool | None
     target_dict: dict[int, str]
 
     @property
     def num_targets(self) -> int:
         return self.encoder1.layer.conv1.in_channels
 
-    def __init__(self, in_channels: int, out_channels: int, img_size: Union[Sequence[int], int], feature_size: int = 16, hidden_size: int = 768, mlp_dim: int = 3072, num_heads: int = 12, pos_embed: str = "conv", norm_name: Union[tuple, str] = "instance", conv_block: bool = True, res_block: bool = True, dropout_rate: float = 0, spatial_dims: int = 3, copy_modality: Optional[bool] = None, target_dict: dict[int, str] = {}) -> None:
+    def __init__(self, in_channels: int, out_channels: int, img_size: Sequence[int] | int, feature_size: int = 16, hidden_size: int = 768, mlp_dim: int = 3072, num_heads: int = 12, pos_embed: str = "conv", norm_name: tuple[str, ...] | str = "instance", conv_block: bool = True, res_block: bool = True, dropout_rate: float = 0, spatial_dims: int = 3, copy_modality: bool | None = None, target_dict: dict[int, str] = {}) -> None:
         super().__init__(in_channels, out_channels, img_size, feature_size, hidden_size, mlp_dim, num_heads, pos_embed, norm_name, conv_block, res_block, dropout_rate, spatial_dims)
         self.copy_modality = copy_modality
         self.target_dict = target_dict
@@ -52,10 +52,10 @@ class UNETRWithDictOutput(UNETRWithMultiModality):
     * extends: `UNETRWithMultiModality`
     """
 
-    def __init__(self, in_channels: int, out_channels: int, img_size: Union[Sequence[int], int], feature_size: int = 16, hidden_size: int = 768, mlp_dim: int = 3072, num_heads: int = 12, pos_embed: str = "conv", norm_name: Union[tuple, str] = "instance", conv_block: bool = True, res_block: bool = True, dropout_rate: float = 0, spatial_dims: int = 3, copy_modality: Optional[bool] = None, target_dict: dict[int, str] = {}) -> None:
+    def __init__(self, in_channels: int, out_channels: int, img_size: Sequence[int] | int, feature_size: int = 16, hidden_size: int = 768, mlp_dim: int = 3072, num_heads: int = 12, pos_embed: str = "conv", norm_name: tuple[str, ...] | str = "instance", conv_block: bool = True, res_block: bool = True, dropout_rate: float = 0, spatial_dims: int = 3, copy_modality: bool | None = None, target_dict: dict[int, str] = {}) -> None:
         super().__init__(in_channels, out_channels, img_size, feature_size, hidden_size, mlp_dim, num_heads, pos_embed, norm_name, conv_block, res_block, dropout_rate, spatial_dims, copy_modality, target_dict)
         warnings.warn("The class `UNETRWithDictOutput` has been deprecated from v1.1 and will be removed in v2.0", DeprecationWarning)
 
-    def forward(self, x_in: torch.Tensor) -> Union[torch.Tensor, dict[str, torch.Tensor]]:
+    def forward(self, x_in: torch.Tensor) -> torch.Tensor | dict[str, torch.Tensor]:
         # repeat modality for input tensor
         return {"out": super().forward(x_in)} if self.training else super().forward(x_in)

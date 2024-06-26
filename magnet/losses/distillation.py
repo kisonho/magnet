@@ -1,6 +1,6 @@
 from torchmanager.losses import KLDiv, Loss
 from torchmanager_core import torch, view, _raise
-from torchmanager_core.typing import Any, Iterable, Optional, Union
+from torchmanager_core.typing import Any, Iterable
 
 from .protocols import FeaturedData
 from .targeting import MAGLoss
@@ -8,7 +8,7 @@ from .targeting import MAGLoss
 
 class PixelWiseKLDiv(KLDiv):
     """The pixel wise KL-Divergence loss for semantic segmentation"""
-    def __init__(self, *args: Any, target: Optional[str] = None, weight: float = 1, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, target: str | None = None, weight: float = 1, **kwargs: Any) -> None:
         super().__init__(*args, target=target, weight=weight, reduction="none", **kwargs)
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
@@ -25,7 +25,7 @@ class MAGSelfDistillationLoss(MAGLoss):
     """
     distillation_losses: torch.nn.ModuleList
 
-    def __init__(self, main_losses: list[Loss], distillation_losses: list[Loss], modality: Optional[int] = None, target: Optional[str] = None) -> None:
+    def __init__(self, main_losses: list[Loss], distillation_losses: list[Loss], modality: int | None = None, target: str | None = None) -> None:
         super().__init__(main_losses, modality=modality, target=target)
         self.distillation_losses = torch.nn.ModuleList(distillation_losses)
         view.warnings.warn("The `MAGSelfDistillationLoss` and `MAGFeatureDistillationLoss` have be combined into `MAGMSLoss`. They will be deprecated in v2.3.")
@@ -72,10 +72,10 @@ class MAGFeatureDistillationLoss(Loss):
     features_dtype: torch.dtype
     features_losses: torch.nn.ModuleList
     main_loss: torch.nn.Module
-    modality: Optional[int]
+    modality: int | None
     normalize_features: bool
 
-    def __init__(self, loss_fn: Loss, feature_losses: list[Loss], features_dtype: torch.dtype = torch.float32, modality: Optional[int] = None, normalize_features: bool = False, target: Optional[str] = None, weight: float = 1) -> None:
+    def __init__(self, loss_fn: Loss, feature_losses: list[Loss], features_dtype: torch.dtype = torch.float32, modality: int | None = None, normalize_features: bool = False, target: str | None = None, weight: float = 1) -> None:
         super().__init__(target=target, weight=weight)
         self.features_dtype =features_dtype
         self.features_losses = torch.nn.ModuleList(feature_losses)
@@ -84,7 +84,7 @@ class MAGFeatureDistillationLoss(Loss):
         self.normalize_features = normalize_features
         view.warnings.warn("The `MAGSelfDistillationLoss` and `MAGFeatureDistillationLoss` have be combined into `MAGMSLoss`. They will be deprecated in v2.3.")
 
-    def forward(self, input: Union[FeaturedData, torch.Tensor], target: Any) -> torch.Tensor:
+    def forward(self, input: FeaturedData | torch.Tensor, target: Any) -> torch.Tensor:
         if isinstance(input, torch.Tensor):
             return self.main_loss(input, target)
         else:
@@ -94,7 +94,7 @@ class MAGFeatureDistillationLoss(Loss):
             loss += self.forward_features(input.features, next_out.shape[0])
             return loss
 
-    def forward_features(self, features: list[Optional[Union[torch.Tensor, Iterable[torch.Tensor]]]], batch_size: int) -> torch.Tensor:
+    def forward_features(self, features: list[torch.Tensor | Iterable[torch.Tensor] | None], batch_size: int) -> torch.Tensor:
         """
         Forward features losses
 
@@ -170,11 +170,11 @@ class MAGMSLoss(MAGLoss):
     """
     distillation_losses: torch.nn.ModuleList
     features_dtype: torch.dtype
-    features_losses: Optional[torch.nn.ModuleList]
-    modality: Optional[int]
+    features_losses: torch.nn.ModuleList | None
+    modality: int | None
     normalize_features: bool
 
-    def __init__(self, losses: list[Loss], distillation_loss: list[Loss], feature_losses: Optional[list[Loss]] = None, *, features_dtype: torch.dtype = torch.float32, modality: Optional[int] = None, normalize_features: bool = False, target: Optional[str] = None, weight: float = 1) -> None:
+    def __init__(self, losses: list[Loss], distillation_loss: list[Loss], feature_losses: list[Loss] | None = None, *, features_dtype: torch.dtype = torch.float32, modality: int | None = None, normalize_features: bool = False, target: str | None = None, weight: float = 1) -> None:
         super().__init__(losses, modality=modality, target=target, weight=weight)
         self.distillation_losses = torch.nn.ModuleList(distillation_loss)
         self.features_dtype =features_dtype
@@ -182,7 +182,7 @@ class MAGMSLoss(MAGLoss):
         self.modality = modality
         self.normalize_features = normalize_features
 
-    def forward(self, input: Union[FeaturedData, list[Optional[torch.Tensor]], torch.Tensor], target: Any) -> torch.Tensor:
+    def forward(self, input: FeaturedData | list[torch.Tensor | None] | torch.Tensor, target: Any) -> torch.Tensor:
         # check input type
         if isinstance(input, FeaturedData):
             # forward main loss along with features losses
@@ -195,7 +195,7 @@ class MAGMSLoss(MAGLoss):
             loss = super().forward(input, target)
         return loss
 
-    def forward_features(self, features: list[Optional[Union[torch.Tensor, Iterable[torch.Tensor]]]], batch_size: int) -> torch.Tensor:
+    def forward_features(self, features: list[torch.Tensor | Iterable[torch.Tensor] | None], batch_size: int) -> torch.Tensor:
         """
         Forward features losses
 

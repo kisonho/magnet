@@ -9,7 +9,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Sequence, Union
+from typing import Sequence
 import torch, torch.nn as nn
 
 from monai.networks.blocks.unetr_block import UnetrBasicBlock, UnetrPrUpBlock
@@ -26,13 +26,13 @@ class UNETREncoder(nn.Module):
     def __init__(
         self,
         in_channels: int,
-        img_size: Union[Sequence[int], int],
+        img_size: Sequence[int] | int,
         feature_size: int = 16,
         hidden_size: int = 768,
         mlp_dim: int = 3072,
         num_heads: int = 12,
         pos_embed: str = "conv",
-        norm_name: Union[tuple, str] = "instance",
+        norm_name: tuple[str, ...] | str = "instance",
         conv_block: bool = True,
         res_block: bool = True,
         dropout_rate: float = 0.0,
@@ -175,13 +175,13 @@ class UNETREncoderWithFusionConv(UNETREncoder):
     def __init__(
         self,
         in_channels: int,
-        img_size: Union[Sequence[int], int],
+        img_size: Sequence[int] | int,
         feature_size: int = 16,
         hidden_size: int = 768,
         mlp_dim: int = 3072,
         num_heads: int = 12,
         pos_embed: str = "conv",
-        norm_name: Union[tuple, str] = "instance",
+        norm_name: tuple[str, ...] | str = "instance",
         conv_block: bool = True,
         res_block: bool = True,
         dropout_rate: float = 0.0,

@@ -1,5 +1,5 @@
 from torchmanager_core import abc, torch
-from torchmanager_core.typing import Any, Optional
+from torchmanager_core.typing import Any
 
 
 class Fusion(torch.nn.Module, abc.ABC):
@@ -37,10 +37,10 @@ class MeanFusion(Fusion):
     
     * extends: `Fusion`
     """
-    def forward(self, x_in: list[Optional[tuple[torch.Tensor, ...]]]) -> list[tuple[torch.Tensor, ...]]:
+    def forward(self, x_in: list[tuple[torch.Tensor, ...] | None]) -> list[tuple[torch.Tensor, ...]]:
         return super().forward(x_in)
     
-    def fuse(self, x_in: list[Optional[tuple[torch.Tensor, ...]]]) -> tuple[torch.Tensor, ...]:
+    def fuse(self, x_in: list[tuple[torch.Tensor, ...] | None]) -> tuple[torch.Tensor, ...]:
         # initialize
         assert len(x_in) > 0, "Fused inputs must have at least one target."
 

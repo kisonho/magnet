@@ -1,12 +1,12 @@
 import copy
-from typing import Union, Sequence
+from typing import Sequence
 
 from magnet.nn import MAGNET, MAGNET2, share_modules
 from magnet.nn.fusion import MeanFusion
 from magnet.networks.unetr import UNETR, UNETRDecoder, UNETREncoderWithFusionConv as UNETREncoder
 
 
-def build_v1(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int], target_dict: dict[int, str], copy_modality: bool = False) -> MAGNET[UNETR]:
+def build_v1(in_channels: int, num_classes: int, img_size: Sequence[int] | int, target_dict: dict[int, str], copy_modality: bool = False) -> MAGNET[UNETR]:
     """
     Function to load a MAGNET
 
@@ -51,7 +51,7 @@ def build_v1(in_channels: int, num_classes: int, img_size: Union[Sequence[int], 
     return magnet
 
 
-def build_v2(in_channels: int, num_classes: int, img_size: Union[Sequence[int], int], target_dict: dict[int, str], copy_encoder: bool = False, return_features: bool = True) -> MAGNET2[UNETREncoder, MeanFusion, UNETRDecoder]:
+def build_v2(in_channels: int, num_classes: int, img_size: Sequence[int] | int, target_dict: dict[int, str], copy_encoder: bool = False, return_features: bool = True) -> MAGNET2[UNETREncoder, MeanFusion, UNETRDecoder]:
     """
     Function to load a MAGNET v2 with UNETR backbone
 

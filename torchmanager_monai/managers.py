@@ -53,6 +53,7 @@ class SegmentationManager(Manager[Module], Generic[Module]):
 
         # loop the dataset
         for data in dataset:
+            assert isinstance(data, dict), "The dataset must return a dictionary."
             x, _ = self.unpack_data(data)
             if use_multi_gpus is not True:
                 x = x.to(device)

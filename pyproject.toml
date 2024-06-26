@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "magms"
-version = "2.2"
-description = "Modality-Agnostic Learning for Medical Image Segmentation Using Multi-modality Self-distillation (v2.2)"
+version = "2.3a1"
+description = "Modality-Agnostic Learning for Medical Image Segmentation Using Multi-modality Self-distillation (v2.3 Alpha 1)"
 authors = ["Qisheng He <Qisheng.He@wayne.edu>"]
 repository = "https://github.com/kisonho/magnet.git"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.11"
 torch = "*"
 torchmanager = "^1.1"
 

@@ -86,18 +86,18 @@ class MeanAttentionFusion(MeanFusion):
         assert num_features == len(self.attention_convs), "Number of features and attention convs must be equal."
 
         # initialize attentioned x_in
-        attnetiond_x_in: list[tuple[torch.Tensor, ...] | None] = [None for _ in range(num_features)]
+        attnetiond_x_in: list[tuple[torch.Tensor, ...] | None] = []
 
         # loop for each target
         for i, x in enumerate(x_in):
             # check if x is given
             if x is None:
-                continue
-
-            # apply attention
-            target_convs = self.attention_convs[i]
-            assert isinstance(target_convs, torch.nn.ModuleList), "Attention convs must be a ModuleList."
-            attnetiond_x_in[i] = tuple([target_convs[j](f) for j, f in enumerate(x)])
+                attnetiond_x_in.append(None)
+            else:
+                # apply attention
+                target_convs = self.attention_convs[i]
+                assert isinstance(target_convs, torch.nn.ModuleList), "Attention convs must be a ModuleList."
+                attnetiond_x_in.append(tuple([target_convs[j](f) for j, f in enumerate(x)]))
         return super().fuse(x_in)
 
 
@@ -127,15 +127,15 @@ class MeanAttentionSingleFusion(MeanSingleFusion):
     - Properties:
         - attention_convs: A `torch.nn.ModuleList` of attention convolutions
     """
-    attention_convs: torch.nn.ModuleList
+    attention_conv: torch.nn.Conv3d
 
     def __init__(self, num_attention_features: int) -> None:
         super().__init__()
-        self.attention_convs = torch.nn.ModuleList([torch.nn.Conv3d(num_attention_features, num_attention_features, 1)])
+        self.attention_conv = torch.nn.Conv3d(num_attention_features, num_attention_features, 1)
 
     def fuse(self, x_in: list[torch.Tensor]) -> torch.Tensor:
         # apply attention
-        attentioned_target: list[torch.Tensor] = [self.attention_convs[0](f) for f in x_in]
+        attentioned_target: list[torch.Tensor] = [self.attention_conv(f) for f in x_in]
         return super().fuse(attentioned_target)
 
 
